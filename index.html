@@ -1,82 +1,235 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Full DPS Optimizer</title>
+<title>DPS Sheet Clone</title>
 
 <style>
-body { font-family: Arial; background:#0d0d0d; color:#eee; padding:20px;}
-h1{color:#00ff88}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.card{background:#1a1a1a;padding:15px;border-radius:8px}
-input,select{width:100%;padding:6px;margin-top:5px;background:#222;color:#fff;border:1px solid #444}
-button{padding:12px;background:#00ff88;border:none;width:100%;cursor:pointer;margin-top:10px}
-.result{font-size:16px;margin-top:10px}
+body {
+  background:#0f0f0f;
+  color:#eee;
+  font-family: Arial;
+  padding:20px;
+}
+
+h2 { color:#00ff88; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+th, td {
+  border:1px solid #333;
+  padding:6px;
+  text-align:center;
+}
+
+th {
+  background:#1a1a1a;
+}
+
+input {
+  width:70px;
+  background:#111;
+  color:#fff;
+  border:1px solid #444;
+  text-align:center;
+}
+
+select {
+  background:#111;
+  color:#fff;
+}
+
+button {
+  padding:10px;
+  background:#00ff88;
+  border:none;
+  cursor:pointer;
+}
 </style>
+
 </head>
 
 <body>
 
-<h1>Full DPS Optimization Tool</h1>
+<h2>DPS Spreadsheet Clone</h2>
 
-<div class="grid">
+<table id="sheet">
+<thead>
+<tr>
+<th>Source</th>
+<th>Power</th>
+<th>Accuracy</th>
+<th>CA</th>
+<th>Strike</th>
+<th>Severity</th>
+<th>Enable</th>
+</tr>
+</thead>
 
-<div class="card">
+<tbody>
+
+<!-- FOOD -->
+<tr><td>Wildstorm</td><td>0.1</td><td>0.1</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox"></td></tr>
+<tr><td>Watermelon</td><td>0.05</td><td>0.05</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox"></td></tr>
+<tr><td>Grand Summer</td><td>0.025</td><td>0.015</td><td>0</td><td>0.015</td><td>0.025</td><td><input type="checkbox"></td></tr>
+<tr><td>Squash Soup</td><td>0</td><td>0</td><td>0</td><td>0.05</td><td>0.05</td><td><input type="checkbox"></td></tr>
+<tr><td>Cha Lua</td><td>0</td><td>0.1</td><td>0</td><td>0</td><td>0.03</td><td><input type="checkbox"></td></tr>
+<tr><td>Hot Wings</td><td>0</td><td>0.05</td><td>0</td><td>0</td><td>0.05</td><td><input type="checkbox"></td></tr>
+
+<!-- GEAR -->
+<tr><td>Armor</td><td>0.06</td><td>0.06</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox" checked></td></tr>
+<tr><td>Enchant</td><td>0.108</td><td>0.108</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox" checked></td></tr>
+<tr><td>Set</td><td>0.075</td><td>0</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox" checked></td></tr>
+<tr><td>Ring Bonus</td><td>0.105</td><td>0</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox"></td></tr>
+
+<!-- COMPANION -->
+<tr id="comp_row">
+<td>Companion (Raptor)</td>
+<td>0.18</td><td>0</td><td>0</td><td>0</td><td>0</td>
+<td><input type="checkbox"></td>
+</tr>
+
+<!-- CLASS (Pant stack replicated) -->
+<tr><td>Class Base</td>
+<td><input value="0.0075"></td>
+<td><input value="0"></td>
+<td><input value="0"></td>
+<td><input value="0"></td>
+<td><input value="0.00375"></td>
+<td>Always</td>
+</tr>
+
+<tr><td>Pant 2</td><td>0.00375</td><td>0</td><td>0</td><td>0</td><td>0.001875</td><td><input type="checkbox"></td></tr>
+<tr><td>Pant 3</td><td>0.001875</td><td>0</td><td>0</td><td>0</td><td>0.0009375</td><td><input type="checkbox"></td></tr>
+
+<!-- RACE -->
+<tr id="race_row">
+<td>Race (Editable)</td>
+<td><input value="0"></td>
+<td><input value="0"></td>
+<td><input value="0"></td>
+<td><input value="0"></td>
+<td><input value="0"></td>
+<td>Always</td>
+</tr>
+
+</tbody>
+
+<tfoot>
+<tr>
+<th>SUBTOTAL</th>
+<th id="p_sum">0</th>
+<th id="a_sum">0</th>
+<th id="c_sum">0</th>
+<th id="s_sum">0</th>
+<th id="sev_sum">0</th>
+<th></th>
+</tr>
+
+<tr>
+<th>TOTAL MULT</th>
+<th id="p_tot">1</th>
+<th id="a_tot">1</th>
+<th id="c_tot">1</th>
+<th id="s_tot">1</th>
+<th id="sev_tot">1</th>
+<th></th>
+</tr>
+</tfoot>
+
+</table>
+
 <h3>Base Stats</h3>
-Power <input id="power" value="144306">
-Accuracy <input id="accuracy" value="142199">
-CA <input id="ca" value="153045">
-Strike <input id="strike" value="145504">
-Severity <input id="severity" value="154626">
-</div>
 
-<div class="card">
-<h3>Race</h3>
-<select id="race">
-<option value="human">Human</option>
-<option value="dragonborn">Dragonborn</option>
-<option value="metallic">Metallic Dragonborn</option>
-<option value="halfOrc">Half-Orc</option>
-<option value="aasimar">Aasimar</option>
-<option value="gith">Gith</option>
-<option value="woodElf">Wood Elf</option>
-</select>
+Power <input id="bp" value="144306">
+Accuracy <input id="ba" value="142199">
+CA <input id="bc" value="153045">
+Strike <input id="bs" value="145504">
+Severity <input id="bsev" value="154626">
 
-<h3>Class</h3>
-<select id="class">
-<option value="bard">Bard</option>
-<option value="cw">CW</option>
-<option value="dc">DC</option>
-<option value="gf">GF</option>
-<option value="gwf">GWF</option>
-<option value="hr">HR</option>
-<option value="sw">SW</option>
-<option value="tr">TR</option>
-</select>
+<br><br>
 
-<h3>Companion</h3>
-<select id="comp">
-<option value="raptor">Raptor (18% Power)</option>
-<option value="none">None</option>
-</select>
-</div>
+<button onclick="calc()">Calculate Final Stats</button>
 
-<div class="card">
-<h3>Food / Consumables</h3>
-<label><input type="checkbox" class="buff" data="0.1,0.1,0,0,0"> Wildstorm</label>
-<label><input type="checkbox" class="buff" data="0.05,0.05,0,0,0"> Watermelon</label>
-<label><input type="checkbox" class="buff" data="0.025,0.015,0,0.015,0.025"> Grand Summer</label>
-<label><input type="checkbox" class="buff" data="0,0,0,0.05,0.05"> Squash Soup</label>
-<label><input type="checkbox" class="buff" data="0,0.1,0,0,0.03"> Cha Lua</label>
-<label><input type="checkbox" class="buff" data="0,0.05,0,0,0.05"> Hot Wings</label>
+<h3 id="result"></h3>
 
-<h3>Potions</h3>
-<label><input type="checkbox" class="buff" data="0,0,0,0.05,0.05"> Elixir</label>
-<label><input type="checkbox" class="buff" data="0,0,0,0,0"> Flask</label>
-</div>
+<script>
 
-<div class="card">
-<h3>Gear Bonuses</h3>
-<label><input type="checkbox" class="buff" data="0.06,0.06,0,0,0" checked> Armor</label>
-<label><input type="checkbox" class="buff" data="0.108,0.108,0,0,0" checked> Enchant</label>
+function calc(){
 
+let rows=document.querySelectorAll("#sheet tbody tr");
+
+let sum=[0,0,0,0,0];
+
+rows.forEach(r=>{
+ let cells=r.querySelectorAll("td, input");
+
+ let enabled=true;
+
+ let checkbox=r.querySelector("input[type=checkbox]");
+ if(checkbox && !checkbox.checked) enabled=false;
+
+ if(enabled){
+
+  for(let i=1;i<=5;i++){
+
+    let v;
+
+    if(r.children[i].querySelector("input")){
+        v=parseFloat(r.children[i].querySelector("input").value)||0;
+    } else {
+        v=parseFloat(r.children[i].innerText)||0;
+    }
+
+    sum[i-1]+=v;
+  }
+
+ }
+
+});
+
+let total=sum.map(x=>1+x);
+
+// update UI
+p_sum.innerText=sum[0].toFixed(3);
+a_sum.innerText=sum[1].toFixed(3);
+c_sum.innerText=sum[2].toFixed(3);
+s_sum.innerText=sum[3].toFixed(3);
+sev_sum.innerText=sum[4].toFixed(3);
+
+p_tot.innerText=total[0].toFixed(3);
+a_tot.innerText=total[1].toFixed(3);
+c_tot.innerText=total[2].toFixed(3);
+s_tot.innerText=total[3].toFixed(3);
+sev_tot.innerText=total[4].toFixed(3);
+
+// final calc
+let base=[
++bp.value,
++ba.value,
++bc.value,
++bs.value,
++bsev.value
+];
+
+let final=base.map((v,i)=>Math.round(v*total[i]));
+
+result.innerHTML=`
+Final Stats:<br><br>
+Power: ${final[0]}<br>
+Accuracy: ${final[1]}<br>
+CA: ${final[2]}<br>
+Strike: ${final[3]}<br>
+Severity: ${final[4]}
+`;
+
+}
+
+</script>
+
+</body>
+</html>
