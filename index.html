@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neverwinter Stat Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #262626;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #ff9900;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 6px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #00ccff;
+            font-size: 1.2rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+        input, select {
+            padding: 8px;
+            background-color: #444;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+        th {
+            background-color: #222;
+            color: #ff9900;
+        }
+        tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #00ffcc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Neverwinter Character Status Builder</h1>
+    
+    <div class="section">
+        <h2>1. Atributos Base (Item Level & Ratings)</h2>
+        <div class="grid">
+            <div class="form-group">
+                <label for="itemLevel">Item Level Total:</label>
+                <input type="number" id="itemLevel" value="143887" oninput="calcular()">
+            </div>
+        </div>
+        
+        <p style="font-size: 0.85rem; color: #aaa; margin-top: 10px;">Insira o Current Rating obtido pelos seus equipamentos para cada status:</p>
+        <div class="grid">
+            <div class="form-group">
+                <label for="rPower">Power Rating:</label>
+                <input type="number" id="rPower" value="144306" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="rAccuracy">Accuracy Rating:</label>
+                <input type="number" id="rAccuracy" value="142199" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="rCA">Combat Advantage Rating:</label>
+                <input type="number" id="rCA" value="153045" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="rStrike">Crit Strike Rating:</label>
+                <input type="number" id="rStrike" value="145504" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label for="rSeverity">Crit Severity Rating:</label>
+                <input type="number" id="rSeverity" value="154626" oninput="calcular()">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>2. Consumíveis e Buffs Ativos</h2>
+        <div class="grid">
+            <div class="form-group">
+                <label for="comida">Comida (Food Buff):</label>
+                <select id="comida" onchange="calcular()">
+                    <option value="none">Nenhuma</option>
+                    <option value="watermelon" selected>Legacy Watermelon (+10% Power, +10% Accuracy)</option>
+                    <option value="grand_summer">Legacy Grand Summer (+5% Power, +5% Accuracy, +1.5% Strike, +2.5% Severity)</option>
+                    <option value="squash_soup">Squash Soup (+5% Strike, +5% Severity)</option>
+                    <option value="hot_wings">Hot Wings (+5% Accuracy, +5% Severity)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="stronghold">Stronghold Food Bonus (Power):</label>
+                <select id="stronghold" onchange="calcular()">
+                    <option value="0">Não</option>
+                    <option value="4000" selected>Sim (+4000 Power Rating)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="race">Raça do Personagem:</label>
+                <select id="race" onchange="calcular()">
+                    <option value="wood_elf" selected>Wood Elf (+5% Crit Severity)</option>
+                    <option value="dragonborn">Dragonborn (+3% Power, +3% Crit Strike)</option>
+                    <option value="human">Human (+1% em Tudo)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>3. Resultado Final dos Status (%)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Atributo</th>
+                    <th>Base Cap (IL)</th>
+                    <th>Seu Rating</th>
+                    <th>Rating % (Max 50%)</th>
+                    <th>Buffs %</th>
+                    <th>Total Real % (Max 90%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Power</strong></td>
+                    <td id="capPower">-</td>
+                    <td id="valPower">-</td>
+                    <td id="pctRatingPower">-</td>
+                    <td id="buffPower">-</td>
+                    <td id="totalPower" class="highlight">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Accuracy</strong></td>
+                    <td id="capAccuracy">-</td>
+                    <td id="valAccuracy">-</td>
+                    <td id="pctRatingAccuracy">-</td>
+                    <td id="buffAccuracy">-</td>
+                    <td id="totalAccuracy" class="highlight">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Combat Advantage (CA)</strong></td>
+                    <td id="capCA">-</td>
+                    <td id="valCA">-</td>
+                    <td id="pctRatingCA">-</td>
+                    <td id="buffCA">-</td>
+                    <td id="totalCA" class="highlight">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Critical Strike</strong></td>
+                    <td id="capStrike">-</td>
+                    <td id="valStrike">-</td>
+                    <td id="pctRatingStrike">-</td>
+                    <td id="buffStrike">-</td>
+                    <td id="totalStrike" class="highlight">-</td>
+                </tr>
+                <tr>
+                    <td><strong>Critical Severity</strong></td>
+                    <td id="capSeverity">-</td>
+                    <td id="valSeverity">-</td>
+                    <td id="pctRatingSeverity">-</td>
+                    <td id="buffSeverity">-</td>
+                    <td id="totalSeverity" class="highlight">-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function calcular() {
+    // 1. Pegar valores dos inputs
+    let il = parseFloat(document.getElementById('itemLevel').value) || 0;
+    
+    let rPower = parseFloat(document.getElementById('rPower').value) || 0;
+    let rAccuracy = parseFloat(document.getElementById('rAccuracy').value) || 0;
+    let rCA = parseFloat(document.getElementById('rCA').value) || 0;
+    let rStrike = parseFloat(document.getElementById('rStrike').value) || 0;
+    let rSeverity = parseFloat(document.getElementById('rSeverity').value) || 0;
+
+    // Aplicar bônus de rating fixo do Stronghold Food se ativo
+    let sh = parseFloat(document.getElementById('stronghold').value);
+    rPower += sh;
+
+    // Em Neverwinter, o Cap de Rating é igual ao seu Item Level (ou IL + 10k para algumas tabelas antigas)
+    // Conforme sua linha 3 do Excel: Maximum Rating = Item Level para a maioria.
+    let cap = il; 
+
+    // Mostrar os Caps na tabela
+    document.getElementById('capPower').innerText = cap;
+    document.getElementById('capAccuracy').innerText = cap;
+    document.getElementById('capCA').innerText = cap;
+    document.getElementById('capStrike').innerText = cap;
+    document.getElementById('capSeverity').innerText = cap;
+
+    document.getElementById('valPower').innerText = rPower;
+    document.getElementById('valAccuracy').innerText = rAccuracy;
+    document.getElementById('valCA').innerText = rCA;
+    document.getElementById('valStrike').innerText = rStrike;
+    document.getElementById('valSeverity').innerText = rSeverity;
+
+    // Calcular a porcentagem vinda do Rating: (Rating / Cap) * 50%
+    function calcRatingPct(rating, capVal) {
+        if (capVal === 0) return 0;
+        let pct = (rating / capVal) * 50;
+        return Math.min(pct, 50); // Hard cap de 50% vindo de rating
+    }
+
+    let pRatingPower = calcRatingPct(rPower, cap);
+    let pRatingAcc = calcRatingPct(rAccuracy, cap);
+    let pRatingCA = calcRatingPct(rCA, cap);
+    let pRatingStrike = calcRatingPct(rStrike, cap);
+    let pRatingSeverity = calcRatingPct(rSeverity, cap);
+
+    document.getElementById('pctRatingPower').innerText = pRatingPower.toFixed(2) + "%";
+    document.getElementById('pctRatingAccuracy').innerText = pRatingAcc.toFixed(2) + "%";
+    document.getElementById('pctRatingCA').innerText = pRatingCA.toFixed(2) + "%";
+    document.getElementById('pctRatingStrike').innerText = pRatingStrike.toFixed(2) + "%";
+    document.getElementById('pctRatingSeverity').innerText = pRatingSeverity.toFixed(2) + "%";
+
+    // 2. Calcular as porcentagens vinda de Buffs (Comidas e Raças)
+    let bPower = 0, bAcc = 0, bCA = 0, bStrike = 0, bSeverity = 0;
+
+    // Seleção de comida
+    let comida = document.getElementById('comida').value;
+    if (comida === 'watermelon') { bPower += 10; bAcc += 10; }
+    else if (comida === 'grand_summer') { bPower += 5; bAcc += 5; bStrike += 1.5; bSeverity += 2.5; }
+    else if (comida === 'squash_soup') { bStrike += 5; bSeverity += 5; }
+    else if (comida === 'hot_wings') { bAcc += 5; bSeverity += 5; }
+
+    // Seleção de raça
+    let raça = document.getElementById('race').value;
+    if (raça === 'wood_elf') { bSeverity += 5; }
+    else if (raça === 'dragonborn') { bPower += 3; bStrike += 3; }
+    else if (raça === 'human') { bPower += 1; bAcc += 1; bCA += 1; bStrike += 1; bSeverity += 1; }
+
+    document.getElementById('buffPower').innerText = bPower.toFixed(1) + "%";
+    document.getElementById('buffAccuracy').innerText = bAcc.toFixed(1) + "%";
+    document.getElementById('buffCA').innerText = bCA.toFixed(1) + "%";
+    document.getElementById('buffStrike').innerText = bStrike.toFixed(1) + "%";
+    document.getElementById('buffSeverity').innerText = bSeverity.toFixed(1) + "%";
+
+    // 3. Total Final (Rating % + Buffs %). O cap total do jogo é 90%
+    document.getElementById('totalPower').innerText = Math.min(pRatingPower + bPower, 90).toFixed(2) + "%";
+    document.getElementById('totalAccuracy').innerText = Math.min(pRatingAcc + bAcc, 90).toFixed(2) + "%";
+    document.getElementById('totalCA').innerText = Math.min(pRatingCA + bCA, 90).toFixed(2) + "%";
+    document.getElementById('totalStrike').innerText = Math.min(pRatingStrike + bStrike, 90).toFixed(2) + "%";
+    document.getElementById('totalSeverity').innerText = Math.min(pRatingSeverity + bSeverity, 90).toFixed(2) + "%";
+}
+
+// Inicializar os cálculos ao abrir a página
+window.onload = calcular;
+</script>
+
+</body>
+</html>
