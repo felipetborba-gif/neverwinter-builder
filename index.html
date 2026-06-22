@@ -1,234 +1,318 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>DPS Sheet Clone</title>
-
-<style>
-body {
-  background:#0f0f0f;
-  color:#eee;
-  font-family: Arial;
-  padding:20px;
-}
-
-h2 { color:#00ff88; }
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-th, td {
-  border:1px solid #333;
-  padding:6px;
-  text-align:center;
-}
-
-th {
-  background:#1a1a1a;
-}
-
-input {
-  width:70px;
-  background:#111;
-  color:#fff;
-  border:1px solid #444;
-  text-align:center;
-}
-
-select {
-  background:#111;
-  color:#fff;
-}
-
-button {
-  padding:10px;
-  background:#00ff88;
-  border:none;
-  cursor:pointer;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPS Dungeon Status</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background-color: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        h2, h3 {
+            color: #569cd6;
+            text-align: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background-color: #2d2d30;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #333;
+            color: #4ec9b0;
+        }
+        input, select {
+            width: 90%;
+            padding: 6px;
+            background-color: #3c3c3c;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            text-align: center;
+        }
+        input[type="number"] {
+            font-family: monospace;
+        }
+        .highlight-row {
+            background-color: #1e1e1e;
+            font-weight: bold;
+            color: #ce9178;
+        }
+        .flex-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .flex-box {
+            flex: 1;
+            min-width: 300px;
+            background-color: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .form-group label {
+            flex: 1;
+        }
+        .form-group select, .form-group input {
+            flex: 1;
+        }
+    </style>
 </head>
-
 <body>
 
-<h2>DPS Spreadsheet Clone</h2>
+<div class="container">
+    <h2>DPS Status Calculator</h2>
 
-<table id="sheet">
-<thead>
-<tr>
-<th>Source</th>
-<th>Power</th>
-<th>Accuracy</th>
-<th>CA</th>
-<th>Strike</th>
-<th>Severity</th>
-<th>Enable</th>
-</tr>
-</thead>
+    <div class="flex-container">
+        <!-- Settings & Buffs -->
+        <div class="flex-box">
+            <h3>Configuration & Buffs</h3>
+            
+            <div class="form-group">
+                <label><strong>Item Level</strong></label>
+                <input type="number" id="ilvl" value="143887" oninput="calculateStats()">
+            </div>
+            <hr style="border-color:#444;">
+            <div class="form-group"><label>Flask</label><select id="flask" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+            <div class="form-group"><label>Stronghold Food</label><select id="food" onchange="calculateStats()"><option value="NÃO">None</option><option value="Power" selected>Power</option><option value="Accuracy">Accuracy</option><option value="Strike">Strike</option></select></div>
+            <div class="form-group"><label>Wildstorm/Sunlord</label><select id="wildstorm" onchange="calculateStats()"><option value="NÃO">None</option><option value="Wildstorm">Wildstorm</option><option value="Sunlord">Sunlord</option></select></div>
+            <div class="form-group"><label>Pack Tactics 1</label><select id="pack1" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+            <div class="form-group"><label>Pack Tactics 2</label><select id="pack2" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+            <div class="form-group"><label>Pack Tactics 3</label><select id="pack3" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+            <div class="form-group"><label>Avian</label><select id="avian" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+            <div class="form-group"><label>Runic Aura</label><select id="runic" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+            <div class="form-group"><label>Mystic Aura</label><select id="mystic" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM" selected>SIM</option></select></div>
+        </div>
+    </div>
 
-<tbody>
+    <!-- Stats Table -->
+    <h3>Main Ratings</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Power</th>
+                <th>Accuracy</th>
+                <th>CA</th>
+                <th>Strike</th>
+                <th>Severity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="highlight-row">
+                <td>Maximum Rating</td>
+                <td id="max_power">0</td>
+                <td id="max_acc">0</td>
+                <td id="max_ca">0</td>
+                <td id="max_strike">0</td>
+                <td id="max_sev">0</td>
+            </tr>
+            <tr>
+                <td>Current Rating (Base)</td>
+                <td><input type="number" id="curr_power" value="144306" oninput="calculateStats()"></td>
+                <td><input type="number" id="curr_acc" value="142199" oninput="calculateStats()"></td>
+                <td><input type="number" id="curr_ca" value="153045" oninput="calculateStats()"></td>
+                <td><input type="number" id="curr_strike" value="145504" oninput="calculateStats()"></td>
+                <td><input type="number" id="curr_sev" value="154626" oninput="calculateStats()"></td>
+            </tr>
+            <tr class="highlight-row">
+                <td>New Maximum Rating</td>
+                <td id="new_power">0</td>
+                <td id="new_acc">0</td>
+                <td id="new_ca">0</td>
+                <td id="new_strike">0</td>
+                <td id="new_sev">0</td>
+            </tr>
+            <tr>
+                <td>Delta</td>
+                <td id="del_power">0</td>
+                <td id="del_acc">0</td>
+                <td id="del_ca">0</td>
+                <td id="del_strike">0</td>
+                <td id="del_sev">0</td>
+            </tr>
+        </tbody>
+    </table>
 
-<!-- FOOD -->
-<tr><td>Wildstorm</td><td>0.1</td><td>0.1</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox"></td></tr>
-<tr><td>Watermelon</td><td>0.05</td><td>0.05</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox"></td></tr>
-<tr><td>Grand Summer</td><td>0.025</td><td>0.015</td><td>0</td><td>0.015</td><td>0.025</td><td><input type="checkbox"></td></tr>
-<tr><td>Squash Soup</td><td>0</td><td>0</td><td>0</td><td>0.05</td><td>0.05</td><td><input type="checkbox"></td></tr>
-<tr><td>Cha Lua</td><td>0</td><td>0.1</td><td>0</td><td>0</td><td>0.03</td><td><input type="checkbox"></td></tr>
-<tr><td>Hot Wings</td><td>0</td><td>0.05</td><td>0</td><td>0</td><td>0.05</td><td><input type="checkbox"></td></tr>
+    <!-- Percentages Table -->
+    <h3>Percentage Adjustments (%)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>Power</th>
+                <th>Accuracy</th>
+                <th>CA</th>
+                <th>Strike</th>
+                <th>Severity</th>
+            </tr>
+        </thead>
+        <tbody id="pctBody">
+            <!-- Injected via JavaScript -->
+        </tbody>
+        <tfoot>
+            <tr class="highlight-row">
+                <td>Total %</td>
+                <td id="totPct_Power">0.000</td>
+                <td id="totPct_Acc">0.000</td>
+                <td id="totPct_CA">0.000</td>
+                <td id="totPct_Strike">0.000</td>
+                <td id="totPct_Sev">0.000</td>
+            </tr>
+        </tfoot>
+    </table>
 
-<!-- GEAR -->
-<tr><td>Armor</td><td>0.06</td><td>0.06</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox" checked></td></tr>
-<tr><td>Enchant</td><td>0.108</td><td>0.108</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox" checked></td></tr>
-<tr><td>Set</td><td>0.075</td><td>0</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox" checked></td></tr>
-<tr><td>Ring Bonus</td><td>0.105</td><td>0</td><td>0</td><td>0</td><td>0</td><td><input type="checkbox"></td></tr>
-
-<!-- COMPANION -->
-<tr id="comp_row">
-<td>Companion (Raptor)</td>
-<td>0.18</td><td>0</td><td>0</td><td>0</td><td>0</td>
-<td><input type="checkbox"></td>
-</tr>
-
-<!-- CLASS (Pant stack replicated) -->
-<tr><td>Class Base</td>
-<td><input value="0.0075"></td>
-<td><input value="0"></td>
-<td><input value="0"></td>
-<td><input value="0"></td>
-<td><input value="0.00375"></td>
-<td>Always</td>
-</tr>
-
-<tr><td>Pant 2</td><td>0.00375</td><td>0</td><td>0</td><td>0</td><td>0.001875</td><td><input type="checkbox"></td></tr>
-<tr><td>Pant 3</td><td>0.001875</td><td>0</td><td>0</td><td>0</td><td>0.0009375</td><td><input type="checkbox"></td></tr>
-
-<!-- RACE -->
-<tr id="race_row">
-<td>Race (Editable)</td>
-<td><input value="0"></td>
-<td><input value="0"></td>
-<td><input value="0"></td>
-<td><input value="0"></td>
-<td><input value="0"></td>
-<td>Always</td>
-</tr>
-
-</tbody>
-
-<tfoot>
-<tr>
-<th>SUBTOTAL</th>
-<th id="p_sum">0</th>
-<th id="a_sum">0</th>
-<th id="c_sum">0</th>
-<th id="s_sum">0</th>
-<th id="sev_sum">0</th>
-<th></th>
-</tr>
-
-<tr>
-<th>TOTAL MULT</th>
-<th id="p_tot">1</th>
-<th id="a_tot">1</th>
-<th id="c_tot">1</th>
-<th id="s_tot">1</th>
-<th id="sev_tot">1</th>
-<th></th>
-</tr>
-</tfoot>
-
-</table>
-
-<h3>Base Stats</h3>
-
-Power <input id="bp" value="144306">
-Accuracy <input id="ba" value="142199">
-CA <input id="bc" value="153045">
-Strike <input id="bs" value="145504">
-Severity <input id="bsev" value="154626">
-
-<br><br>
-
-<button onclick="calc()">Calculate Final Stats</button>
-
-<h3 id="result"></h3>
+</div>
 
 <script>
+    // 1. Generate Percentage Inputs
+    const pctSources = ['Base %', 'Head', 'Armor', 'Arms', 'Weapons', 'Feet', 'Set', 'Ring 1', 'Ring 2', 'Shirt', 'Pants'];
+    const stats = ['Power', 'Acc', 'CA', 'Strike', 'Sev'];
+    
+    // Seed spreadsheet defaults to match user file
+    const defaultPct = {
+        'pct_0_Power': 0.959, 'pct_0_Acc': 0.573, 'pct_0_CA': 0.902, 'pct_0_Strike': 0.825, 'pct_0_Sev': 1.035,
+        'pct_2_Acc': 0.06, 'pct_2_CA': 0.06,
+        'pct_6_Acc': 0.075,
+        'pct_7_Acc': 0.105
+    };
 
-function calc(){
+    let html = '';
+    pctSources.forEach((src, i) => {
+        html += `<tr><td>${src}</td>`;
+        stats.forEach(stat => {
+            let id = `pct_${i}_${stat}`;
+            let val = defaultPct[id] || 0;
+            html += `<td><input type="number" step="0.001" id="${id}" value="${val}" oninput="calculateStats()"></td>`;
+        });
+        html += `</tr>`;
+    });
+    document.getElementById('pctBody').innerHTML = html;
 
-let rows=document.querySelectorAll("#sheet tbody tr");
-
-let sum=[0,0,0,0,0];
-
-rows.forEach(r=>{
- let cells=r.querySelectorAll("td, input");
-
- let enabled=true;
-
- let checkbox=r.querySelector("input[type=checkbox]");
- if(checkbox && !checkbox.checked) enabled=false;
-
- if(enabled){
-
-  for(let i=1;i<=5;i++){
-
-    let v;
-
-    if(r.children[i].querySelector("input")){
-        v=parseFloat(r.children[i].querySelector("input").value)||0;
-    } else {
-        v=parseFloat(r.children[i].innerText)||0;
+    // 2. Main Logic Engine
+    function calculateStats() {
+        let ilvl = parseFloat(document.getElementById('ilvl').value) || 0;
+        
+        // --- Calculate Maximum Ratings ---
+        let maxRatings = {
+            power: ilvl + 10000,
+            acc: ilvl,
+            ca: ilvl + 10000,
+            strike: ilvl,
+            sev: ilvl + 10000
+        };
+        
+        document.getElementById('max_power').innerText = maxRatings.power.toLocaleString();
+        document.getElementById('max_acc').innerText = maxRatings.acc.toLocaleString();
+        document.getElementById('max_ca').innerText = maxRatings.ca.toLocaleString();
+        document.getElementById('max_strike').innerText = maxRatings.strike.toLocaleString();
+        document.getElementById('max_sev').innerText = maxRatings.sev.toLocaleString();
+        
+        // --- Pull Current Ratings ---
+        let curr = {
+            power: parseFloat(document.getElementById('curr_power').value) || 0,
+            acc: parseFloat(document.getElementById('curr_acc').value) || 0,
+            ca: parseFloat(document.getElementById('curr_ca').value) || 0,
+            strike: parseFloat(document.getElementById('curr_strike').value) || 0,
+            sev: parseFloat(document.getElementById('curr_sev').value) || 0
+        };
+        
+        // --- Process Buff Logic ---
+        let buff = { power: 0, acc: 0, ca: 0, strike: 0, sev: 0 };
+        
+        if (document.getElementById('flask').value === 'SIM') { buff.power += 550; buff.acc += 550; buff.strike += 550; }
+        
+        let food = document.getElementById('food').value;
+        if (food === 'Power') buff.power += 4000;
+        if (food === 'Accuracy') buff.acc += 4000;
+        if (food === 'Strike') buff.strike += 4000;
+        
+        let wildstorm = document.getElementById('wildstorm').value;
+        if (wildstorm === 'Sunlord') buff.acc += 2000;
+        if (wildstorm === 'Wildstorm') buff.strike += 2000;
+        
+        let pack1 = document.getElementById('pack1').value;
+        let pack2 = document.getElementById('pack2').value;
+        let pack3 = document.getElementById('pack3').value;
+        
+        if (pack1 === 'SIM') {
+            buff.ca += 2250;
+            if (pack2 === 'SIM') {
+                buff.ca += 1125;
+                if (pack3 === 'SIM') buff.ca += 562.5;
+            }
+        }
+        
+        if (document.getElementById('avian').value === 'SIM') buff.power += 1600;
+        if (document.getElementById('runic').value === 'SIM') buff.power += 2250;
+        if (document.getElementById('mystic').value === 'SIM') { buff.power += 2250; buff.acc += 2250; }
+        
+        // --- New Maximum Ratings (Current + Buffs) ---
+        let newMax = {
+            power: curr.power + buff.power,
+            acc: curr.acc + buff.acc,
+            ca: curr.ca + buff.ca,
+            strike: curr.strike + buff.strike,
+            sev: curr.sev + buff.sev
+        };
+        
+        document.getElementById('new_power').innerText = newMax.power.toLocaleString();
+        document.getElementById('new_acc').innerText = newMax.acc.toLocaleString();
+        document.getElementById('new_ca').innerText = newMax.ca.toLocaleString();
+        document.getElementById('new_strike').innerText = newMax.strike.toLocaleString();
+        document.getElementById('new_sev').innerText = newMax.sev.toLocaleString();
+        
+        // --- Calculate Delta (Max - NewMax) ---
+        document.getElementById('del_power').innerText = (maxRatings.power - newMax.power).toLocaleString();
+        document.getElementById('del_acc').innerText = (maxRatings.acc - newMax.acc).toLocaleString();
+        document.getElementById('del_ca').innerText = (maxRatings.ca - newMax.ca).toLocaleString();
+        document.getElementById('del_strike').innerText = (maxRatings.strike - newMax.strike).toLocaleString();
+        document.getElementById('del_sev').innerText = (maxRatings.sev - newMax.sev).toLocaleString();
+        
+        // --- Sum Manual Percentages ---
+        let totals = {Power: 0, Acc: 0, CA: 0, Strike: 0, Sev: 0};
+        
+        for (let i = 0; i < pctSources.length; i++) {
+            stats.forEach(stat => {
+                let val = parseFloat(document.getElementById(`pct_${i}_${stat}`).value) || 0;
+                totals[stat] += val;
+            });
+        }
+        
+        stats.forEach(stat => {
+            document.getElementById(`totPct_${stat}`).innerText = totals[stat].toFixed(3);
+        });
     }
 
-    sum[i-1]+=v;
-  }
-
- }
-
-});
-
-let total=sum.map(x=>1+x);
-
-// update UI
-p_sum.innerText=sum[0].toFixed(3);
-a_sum.innerText=sum[1].toFixed(3);
-c_sum.innerText=sum[2].toFixed(3);
-s_sum.innerText=sum[3].toFixed(3);
-sev_sum.innerText=sum[4].toFixed(3);
-
-p_tot.innerText=total[0].toFixed(3);
-a_tot.innerText=total[1].toFixed(3);
-c_tot.innerText=total[2].toFixed(3);
-s_tot.innerText=total[3].toFixed(3);
-sev_tot.innerText=total[4].toFixed(3);
-
-// final calc
-let base=[
-+bp.value,
-+ba.value,
-+bc.value,
-+bs.value,
-+bsev.value
-];
-
-let final=base.map((v,i)=>Math.round(v*total[i]));
-
-result.innerHTML=`
-Final Stats:<br><br>
-Power: ${final[0]}<br>
-Accuracy: ${final[1]}<br>
-CA: ${final[2]}<br>
-Strike: ${final[3]}<br>
-Severity: ${final[4]}
-`;
-
-}
-
+    // 3. Initialize calculations on page load
+    window.onload = calculateStats;
 </script>
 
 </body>
