@@ -1,386 +1,82 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neverwinter Status Simulator - Rev001</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
-        }
-        h1 {
-            color: #ff9900;
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-            margin-top: 0;
-        }
-        h2 {
-            color: #00ccff;
-            font-size: 1.25rem;
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
-            margin-top: 0;
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media(max-width: 900px) {
-            .dashboard { grid-template-columns: 1fr; }
-        }
-        .section {
-            background-color: #262626;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        .full-width {
-            grid-column: 1 / -1;
-        }
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            font-size: 0.85rem;
-            color: #aaa;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
-        input[type="number"], select {
-            padding: 8px;
-            background-color: #333;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-        input[type="number"]:focus, select:focus {
-            border-color: #ff9900;
-            outline: none;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-            border: 1px solid #3a3a3a;
-        }
-        th {
-            background-color: #1a1a1a;
-            color: #ff9900;
-        }
-        tr:nth-child(even) {
-            background-color: #2d2d2d;
-        }
-        .highlight-total {
-            font-weight: bold;
-            color: #00ffcc;
-            font-size: 1.05rem;
-        }
-        .row-flex {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            background: #333;
-            padding: 6px 12px;
-            border-radius: 4px;
-        }
-        .row-flex select {
-            padding: 4px;
-            width: 80px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Full DPS Optimizer</title>
+
+<style>
+body { font-family: Arial; background:#0d0d0d; color:#eee; padding:20px;}
+h1{color:#00ff88}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.card{background:#1a1a1a;padding:15px;border-radius:8px}
+input,select{width:100%;padding:6px;margin-top:5px;background:#222;color:#fff;border:1px solid #444}
+button{padding:12px;background:#00ff88;border:none;width:100%;cursor:pointer;margin-top:10px}
+.result{font-size:16px;margin-top:10px}
+</style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Neverwinter Status Simulator (TRIAL - MW SET)</h1>
-    
-    <div class="dashboard">
-        
-        <div class="sidebar-inputs">
-            <div class="section" style="margin-bottom: 20px;">
-                <h2>1. Atributos Base (Item Level & Ratings)</h2>
-                <div class="grid-inputs">
-                    <div class="form-group">
-                        <label>Item Level:</label>
-                        <input type="number" id="itemLevel" value="143887" oninput="calcular()">
-                    </div>
-                </div>
-                <div class="grid-inputs">
-                    <div class="form-group"><label>Power Rating:</label><input type="number" id="rPower" value="144306" oninput="calcular()"></div>
-                    <div class="form-group"><label>Accuracy Rating:</label><input type="number" id="rAccuracy" value="142199" oninput="calcular()"></div>
-                    <div class="form-group"><label>CA Rating:</label><input type="number" id="rCA" value="153045" oninput="calcular()"></div>
-                    <div class="form-group"><label>Crit Strike Rating:</label><input type="number" id="rStrike" value="145504" oninput="calcular()"></div>
-                    <div class="form-group"><label>Crit Severity Rating:</label><input type="number" id="rSeverity" value="154626" oninput="calcular()"></div>
-                </div>
-            </div>
+<h1>Full DPS Optimization Tool</h1>
 
-            <div class="section">
-                <h2>2. Entrada Manual de Porcentagens de Equipamento (%)</h2>
-                <p style="font-size:0.8rem; color:#888; margin-top:-5px;">Insira os valores em porcentagem decimal direto dos itens (Ex: 0,06 para 6%)</p>
-                
-                <div class="grid-inputs">
-                    <div class="form-group"><label>Head %:</label><input type="number" id="eqHead" value="0" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Armor %:</label><input type="number" id="eqArmor" value="0.06" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Arms %:</label><input type="number" id="eqArms" value="0" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Weapons %:</label><input type="number" id="eqWeapons" value="0" step="0.001" oninput="calcular()"></div>
-                </div>
-                <div class="grid-inputs">
-                    <div class="form-group"><label>Feet %:</label><input type="number" id="eqFeet" value="0" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Set Bonus %:</label><input type="number" id="eqSet" value="0.075" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Ring 1 %:</label><input type="number" id="eqRing1" value="0.105" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Ring 2 %:</label><input type="number" id="eqRing2" value="0" step="0.001" oninput="calcular()"></div>
-                </div>
-                <div class="grid-inputs">
-                    <div class="form-group"><label>Shirt %:</label><input type="number" id="eqShirt" value="0" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Pants %:</label><input type="number" id="eqPants" value="0.035" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Box %:</label><input type="number" id="eqBox" value="0.025" step="0.001" oninput="calcular()"></div>
-                    <div class="form-group"><label>Enchantment %:</label><input type="number" id="eqEnchant" value="0.108" step="0.001" oninput="calcular()"></div>
-                </div>
-            </div>
-        </div>
+<div class="grid">
 
-        <div class="section">
-            <h2>3. Toggles Ativos e Customizações da Planilha</h2>
-            
-            <div class="row-flex">
-                <label>Flask Ativo?</label>
-                <select id="buffFlask" onchange="calcular()"><option value="NAO">NÃO</option><option value="SIM">SIM</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Stronghold Food (+4000 Power)?</label>
-                <select id="buffStronghold" onchange="calcular()"><option value="Power">SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Wildstorm (+2000 Crit Strike Rating)?</label>
-                <select id="buffWildstorm" onchange="calcular()"><option value="SIM" selected>SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Mystic Aura Ativo?</label>
-                <select id="buffMystic" onchange="calcular()"><option value="SIM" selected>SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Comida Ativa (Food Buff):</label>
-                <select id="buffFood" style="width: 180px;" onchange="calcular()">
-                    <option value="Watermelon" selected>Legacy Watermelon</option>
-                    <option value="Grand Summer">Legacy Grand Summer</option>
-                    <option value="Squash Soup">Squash Soup</option>
-                    <option value="Cha Lua">Cha Lua</option>
-                    <option value="Hot Wings">Hot Wings</option>
-                </select>
-            </div>
-            <div class="row-flex">
-                <label>Raça Atual:</label>
-                <select id="charRace" style="width: 180px;" onchange="calcular()">
-                    <option value="Wood Elf" selected>Wood Elf</option>
-                    <option value="Dragonborn">Dragonborn</option>
-                    <option value="Human">Human</option>
-                    <option value="Metallic Dragonborn">Metallic Dragonborn</option>
-                    <option value="Half-Orc">Half-Orc</option>
-                </select>
-            </div>
-            <div class="row-flex">
-                <label>Sua Classe (Class Bonus):</label>
-                <select id="charClass" style="width: 180px;" onchange="calcular()">
-                    <option value="HR">Hunter Ranger (+10% Severity)</option>
-                    <option value="Bard" selected>Bard</option>
-                    <option value="CW">Control Wizard</option>
-                    <option value="DC">Devout Cleric</option>
-                    <option value="GF">Guardian Fighter</option>
-                    <option value="SW">Scourge Warlock</option>
-                    <option value="TR">Trickster Rogue</option>
-                </select>
-            </div>
-
-            <h3 style="color:#ff9900; font-size:1rem; margin: 15px 0 5px 0;">Companheiros (Summoned & Buffs)</h3>
-            <div class="row-flex">
-                <label>Raptor Ativo? (+18% Power)</label>
-                <select id="compRaptor" onchange="calcular()"><option value="SIM" selected>SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Porto Ativo? (+3.5% Power / +3.5% CA)</label>
-                <select id="compPorto" onchange="calcular()"><option value="SIM" selected>SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Tutor Ativo? (+5% CA)</label>
-                <select id="compTutor" onchange="calcular()"><option value="SIM" selected>SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-            <div class="row-flex">
-                <label>Flap Ativo? (+5% CA)</label>
-                <select id="compFlap" onchange="calcular()"><option value="SIM" selected>SIM</option><option value="NAO">NÃO</option></select>
-            </div>
-        </div>
-
-        <div class="section full-width">
-            <h2>4. Resultado Final Calculado Baseado na Planilha</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Status</th>
-                        <th>Max Rating (Cap)</th>
-                        <th>Seu Rating Real</th>
-                        <th>Rating %</th>
-                        <th>Equipamentos %</th>
-                        <th>Buffs/Companheiros %</th>
-                        <th>Total Final % (Max 90%)</th>
-                    </tr>
-                </thead>
-                <tbody id="resultadoTabela">
-                    </tbody>
-            </table>
-        </div>
-
-    </div>
+<div class="card">
+<h3>Base Stats</h3>
+Power <input id="power" value="144306">
+Accuracy <input id="accuracy" value="142199">
+CA <input id="ca" value="153045">
+Strike <input id="strike" value="145504">
+Severity <input id="severity" value="154626">
 </div>
 
-<script>
-// Base de dados fixa mapeada diretamente das tabelas do canto direito da sua planilha
-const tabelaComidas = {
-    "Legacy Watermelon": { power: 0.1, accuracy: 0.1, ca: 0, strike: 0, severity: 0 },
-    "Legacy Grand Summer": { power: 0.05, accuracy: 0.05, ca: 0, strike: 0.015, severity: 0.025 },
-    "Watermelon": { power: 0.05, accuracy: 0.05, ca: 0, strike: 0, severity: 0 },
-    "Grand Summer": { power: 0.025, accuracy: 0.015, ca: 0, strike: 0.015, severity: 0.025 },
-    "Squash Soup": { power: 0, accuracy: 0, ca: 0, strike: 0.05, severity: 0.05 },
-    "Cha Lua": { power: 0, accuracy: 0.1, ca: 0, strike: 0, severity: 0.03 },
-    "Hot Wings": { power: 0, accuracy: 0.05, ca: 0, strike: 0, severity: 0.05 }
-};
+<div class="card">
+<h3>Race</h3>
+<select id="race">
+<option value="human">Human</option>
+<option value="dragonborn">Dragonborn</option>
+<option value="metallic">Metallic Dragonborn</option>
+<option value="halfOrc">Half-Orc</option>
+<option value="aasimar">Aasimar</option>
+<option value="gith">Gith</option>
+<option value="woodElf">Wood Elf</option>
+</select>
 
-const tabelaRaces = {
-    "Dragonborn": { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
-    "Human": { power: 0.01, accuracy: 0.01, ca: 0.01, strike: 0.01, severity: 0.01 },
-    "Metallic Dragonborn": { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
-    "Half-Orc": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0.05 },
-    "Aasimar": { power: 0.02, accuracy: 0, ca: 0, strike: 0, severity: 0 },
-    "Wood Elf": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 } // Controlado na linha de classe/severidade se necessário
-};
+<h3>Class</h3>
+<select id="class">
+<option value="bard">Bard</option>
+<option value="cw">CW</option>
+<option value="dc">DC</option>
+<option value="gf">GF</option>
+<option value="gwf">GWF</option>
+<option value="hr">HR</option>
+<option value="sw">SW</option>
+<option value="tr">TR</option>
+</select>
 
-function calcular() {
-    // Pegar Valores Iniciais
-    let il = parseFloat(document.getElementById('itemLevel').value) || 0;
-    let rPower = parseFloat(document.getElementById('rPower').value) || 0;
-    let rAccuracy = parseFloat(document.getElementById('rAccuracy').value) || 0;
-    let rCA = parseFloat(document.getElementById('rCA').value) || 0;
-    let rStrike = parseFloat(document.getElementById('rStrike').value) || 0;
-    let rSeverity = parseFloat(document.getElementById('rSeverity').value) || 0;
+<h3>Companion</h3>
+<select id="comp">
+<option value="raptor">Raptor (18% Power)</option>
+<option value="none">None</option>
+</select>
+</div>
 
-    // Aplicar alterações de Rating vindas dos buffs ativos na sua planilha (Linha 7 e 8)
-    if(document.getElementById('buffStronghold').value === "Power") rPower += 4000;
-    if(document.getElementById('buffWildstorm').value === "SIM") rStrike += 2000;
-    if(document.getElementById('buffMystic').value === "SIM") {
-        rPower += 2250;
-        rAccuracy += 2250;
-    }
+<div class="card">
+<h3>Food / Consumables</h3>
+<label><input type="checkbox" class="buff" data="0.1,0.1,0,0,0"> Wildstorm</label>
+<label><input type="checkbox" class="buff" data="0.05,0.05,0,0,0"> Watermelon</label>
+<label><input type="checkbox" class="buff" data="0.025,0.015,0,0.015,0.025"> Grand Summer</label>
+<label><input type="checkbox" class="buff" data="0,0,0,0.05,0.05"> Squash Soup</label>
+<label><input type="checkbox" class="buff" data="0,0.1,0,0,0.03"> Cha Lua</label>
+<label><input type="checkbox" class="buff" data="0,0.05,0,0,0.05"> Hot Wings</label>
 
-    // Caps máximos calculados (Igual a linha 3 da planilha)
-    let maxRating = il;
+<h3>Potions</h3>
+<label><input type="checkbox" class="buff" data="0,0,0,0.05,0.05"> Elixir</label>
+<label><input type="checkbox" class="buff" data="0,0,0,0,0"> Flask</label>
+</div>
 
-    // Obter Porcentagens Manuais do Equipamento
-    let eqPower = (parseFloat(document.getElementById('eqPants').value) || 0); 
-    let eqAccuracy = (parseFloat(document.getElementById('eqArmor').value) || 0) + (parseFloat(document.getElementById('eqSet').value) || 0) + (parseFloat(document.getElementById('eqRing1').value) || 0);
-    let eqCA = (parseFloat(document.getElementById('eqArmor').value) || 0) + (parseFloat(document.getElementById('eqBox').value) || 0) + (parseFloat(document.getElementById('eqEnchant').value) || 0);
-    let eqStrike = (parseFloat(document.getElementById('eqPants').value) || 0);
-    let eqSeverity = (parseFloat(document.getElementById('eqEnchant').value) || 0);
+<div class="card">
+<h3>Gear Bonuses</h3>
+<label><input type="checkbox" class="buff" data="0.06,0.06,0,0,0" checked> Armor</label>
+<label><input type="checkbox" class="buff" data="0.108,0.108,0,0,0" checked> Enchant</label>
 
-    // Buffs de Comida e Raça Dinâmicos das tabelas secundárias
-    let foodSelect = document.getElementById('buffFood').value;
-    let raceSelect = document.getElementById('charRace').value;
-    
-    let fPower = tabelaComidas[foodSelect]?.power || 0;
-    let fAcc = tabelaComidas[foodSelect]?.accuracy || 0;
-    let fCA = tabelaComidas[foodSelect]?.ca || 0;
-    let fStr = tabelaComidas[foodSelect]?.strike || 0;
-    let fSev = tabelaComidas[foodSelect]?.severity || 0;
-
-    let racePower = tabelaRaces[raceSelect]?.power || 0;
-    let raceAcc = tabelaRaces[raceSelect]?.accuracy || 0;
-    let raceCA = tabelaRaces[raceSelect]?.ca || 0;
-    let raceStr = tabelaRaces[raceSelect]?.strike || 0;
-    let raceSev = tabelaRaces[raceSelect]?.severity || 0;
-
-    // Adicionar bônus específicos de Companheiros ativos
-    let compPower = 0, compCA = 0;
-    if(document.getElementById('compRaptor').value === "SIM") compPower += 0.18;
-    if(document.getElementById('compPorto').value === "SIM") { compPower += 0.035; compCA += 0.035; }
-    if(document.getElementById('compTutor').value === "SIM") compCA += 0.05;
-    if(document.getElementById('compFlap').value === "SIM") compCA += 0.05;
-
-    // Bônus de Classes (Class Bonus) da linha 33 da planilha
-    let classPower = 0, classAcc = 0, classCA = 0, classStr = 0, classSev = 0;
-    let classe = document.getElementById('charClass').value;
-    if(classe === "HR") classSev += 0.10; // Hunter Ranger dá bônus em Crit Severity
-    if(raceSelect === "Wood Elf") classSev += 0.05; // Ajuste fino Wood elf
-
-    // Consolidação de Buffs Gerais (%)
-    let bPower = fPower + racePower + compPower + classPower;
-    let bAccuracy = fAcc + raceAcc + classAcc;
-    let bCA = fCA + raceCA + compCA + classCA;
-    let bStrike = fStr + raceStr + classStr;
-    let bSeverity = fSev + raceSev + classSev;
-
-    // Função de conversão do Rating para %: (Rating / MaxRating) * 50
-    function getRatingPct(val, cap) {
-        if(cap === 0) return 0;
-        return Math.min((val / cap) * 50, 50);
-    }
-
-    let stats = [
-        { name: "Power", rating: rPower, ePct: eqPower, bPct: bPower },
-        { name: "Accuracy", rating: rAccuracy, ePct: eqAccuracy, bPct: bAccuracy },
-        { name: "Combat Advantage (CA)", rating: rCA, ePct: eqCA, bPct: bCA },
-        { name: "Critical Strike", rating: rStrike, ePct: eqStrike, bPct: bStrike },
-        { name: "Critical Severity", rating: rSeverity, ePct: eqSeverity, bPct: bSeverity }
-    ];
-
-    let html = "";
-    stats.forEach(st => {
-        let rPct = getRatingPct(st.rating, maxRating);
-        let total = rPct + (st.ePct * 100) + (st.bPct * 100);
-        if(total > 90) total = 90; // Hard Cap do Neverwinter
-
-        html += `<tr>
-            <td><strong>${st.name}</strong></td>
-            <td>${maxRating}</td>
-            <td>${st.rating}</td>
-            <td>${rPct.toFixed(2)}%</td>
-            <td>${(st.ePct * 100).toFixed(1)}%</td>
-            <td>${(st.bPct * 100).toFixed(1)}%</td>
-            <td class="highlight-total">${total.toFixed(2)}%</td>
-        </tr>`;
-    });
-
-    document.getElementById('resultadoTabela').innerHTML = html;
-}
-
-// Inicializar carregando os cálculos
-window.onload = calcular;
-</script>
-
-</body>
-</html>
