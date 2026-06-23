@@ -3,317 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPS Dungeon Status</title>
+    <title>Neverwinter DPS Stat Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e1e;
-            color: #d4d4d4;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            background-color: #252526;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        h2, h3 {
-            color: #569cd6;
-            text-align: center;
-            border-bottom: 1px solid #444;
-            padding-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-            background-color: #2d2d30;
-        }
-        th, td {
-            border: 1px solid #444;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #333;
-            color: #4ec9b0;
-        }
-        input, select {
-            width: 90%;
-            padding: 6px;
-            background-color: #3c3c3c;
-            color: #fff;
-            border: 1px solid #555;
-            border-radius: 4px;
-            text-align: center;
-        }
-        input[type="number"] {
-            font-family: monospace;
-        }
-        .highlight-row {
-            background-color: #1e1e1e;
-            font-weight: bold;
-            color: #ce9178;
-        }
-        .flex-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .flex-box {
-            flex: 1;
-            min-width: 300px;
-            background-color: #2d2d30;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #444;
-        }
-        .form-group {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        .form-group label {
-            flex: 1;
-        }
-        .form-group select, .form-group input {
-            flex: 1;
+        /* Forces standard MMO numeric font styling */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans selection:bg-cyan-500 selection:text-slate-950">
 
-<div class="container">
-    <h2>DPS Status Calculator</h2>
-
-    <div class="flex-container">
-        <!-- Settings & Buffs -->
-        <div class="flex-box">
-            <h3>Configuration & Buffs</h3>
-            
-            <div class="form-group">
-                <label><strong>Item Level</strong></label>
-                <input type="number" id="ilvl" value="143887" oninput="calculateStats()">
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="mb-8 border-b border-slate-800 pb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-mono tracking-widest text-slate-400 uppercase">Mod 20+ Theorycraft Engine</span>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-black tracking-wider text-cyan-400 uppercase">DPS Stat Optimizer</h1>
             </div>
-            <hr style="border-color:#444;">
-            <div class="form-group"><label>Flask</label><select id="flask" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
-            <div class="form-group"><label>Stronghold Food</label><select id="food" onchange="calculateStats()"><option value="NÃO">None</option><option value="Power" selected>Power</option><option value="Accuracy">Accuracy</option><option value="Strike">Strike</option></select></div>
-            <div class="form-group"><label>Wildstorm/Sunlord</label><select id="wildstorm" onchange="calculateStats()"><option value="NÃO">None</option><option value="Wildstorm">Wildstorm</option><option value="Sunlord">Sunlord</option></select></div>
-            <div class="form-group"><label>Pack Tactics 1</label><select id="pack1" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
-            <div class="form-group"><label>Pack Tactics 2</label><select id="pack2" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
-            <div class="form-group"><label>Pack Tactics 3</label><select id="pack3" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
-            <div class="form-group"><label>Avian</label><select id="avian" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
-            <div class="form-group"><label>Runic Aura</label><select id="runic" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
-            <div class="form-group"><label>Mystic Aura</label><select id="mystic" onchange="calculateStats()"><option value="NÃO">NÃO</option><option value="SIM" selected>SIM</option></select></div>
+            
+            <div class="bg-slate-900 border-2 border-cyan-500/30 px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-lg shadow-cyan-950/20">
+                <label for="input-il" class="text-xs font-bold uppercase tracking-wider text-slate-300">Item Level:</label>
+                <input type="number" id="input-il" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1 text-amber-400 font-mono font-bold text-xl w-36 text-center focus:outline-none focus:border-cyan-400" value="143887">
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 h-fit shadow-xl space-y-6">
+                <h2 class="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-800 pb-2.5">Configuração (Modifiers)</h2>
+
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="block text-slate-300 mb-1.5 font-bold uppercase tracking-wider">Raça (Race)</label>
+                        <select id="select-race" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 font-medium focus:outline-none focus:border-cyan-500">
+                            <option value="Half-Orc" selected>Half-Orc (+5% Crit Severity)</option>
+                            <option value="Dragonborn">Dragonborn (+3% Power / +3% Crit Strike)</option>
+                            <option value="Metallic Dragonborn">Metallic Dragonborn (+3% Power / +3% Crit Strike)</option>
+                            <option value="Human">Human (+1% All Stats)</option>
+                            <option value="Aasimar">Aasimar (+2% Power)</option>
+                            <option value="None">Nenhuma</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1.5 font-bold uppercase tracking-wider">Comida (Food)</label>
+                        <select id="select-food" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 font-medium focus:outline-none focus:border-cyan-500">
+                            <option value="Squash Soup" selected>Squash Soup (+5% Crit / +5% Severity)</option>
+                            <option value="Watermelon">Watermelon Sorbet (+5% Power / +5% Accuracy)</option>
+                            <option value="Legacy Watermelon">Legacy Sorbet (+10% Power / +10% Accuracy)</option>
+                            <option value="Grand Summer">Grand Summer Feast</option>
+                            <option value="Legacy Grand Summer">Legacy Grand Summer Feast</option>
+                            <option value="Cha Lua">Cha Lua (+10% Accuracy / +3% Severity)</option>
+                            <option value="Hot Wings">Hot Wings (+5% Accuracy / +5% Severity)</option>
+                            <option value="None">Nenhuma</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-400 mb-1.5 font-bold uppercase tracking-wider">Stronghold Food (+4,000 Rating)</label>
+                        <select id="select-sh" class="w-full bg-slate-950 border border-amber-500/40 rounded-lg p-2.5 text-amber-300 font-bold focus:outline-none focus:border-amber-400">
+                            <option value="power" selected>Power Target</option>
+                            <option value="accuracy">Accuracy Target</option>
+                            <option value="ca">Combat Advantage Target</option>
+                            <option value="strike">Critical Strike Target</option>
+                            <option value="severity">Critical Severity Target</option>
+                            <option value="none">Nenhum</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 pt-3 border-t border-slate-800">Raid / Party Buffs</label>
+                    <div class="space-y-2.5 text-xs font-medium" id="buffs-checkbox-container">
+                        </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div id="stat-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4.5">
+                    </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- Stats Table -->
-    <h3>Main Ratings</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Metric</th>
-                <th>Power</th>
-                <th>Accuracy</th>
-                <th>CA</th>
-                <th>Strike</th>
-                <th>Severity</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="highlight-row">
-                <td>Maximum Rating</td>
-                <td id="max_power">0</td>
-                <td id="max_acc">0</td>
-                <td id="max_ca">0</td>
-                <td id="max_strike">0</td>
-                <td id="max_sev">0</td>
-            </tr>
-            <tr>
-                <td>Current Rating (Base)</td>
-                <td><input type="number" id="curr_power" value="144306" oninput="calculateStats()"></td>
-                <td><input type="number" id="curr_acc" value="142199" oninput="calculateStats()"></td>
-                <td><input type="number" id="curr_ca" value="153045" oninput="calculateStats()"></td>
-                <td><input type="number" id="curr_strike" value="145504" oninput="calculateStats()"></td>
-                <td><input type="number" id="curr_sev" value="154626" oninput="calculateStats()"></td>
-            </tr>
-            <tr class="highlight-row">
-                <td>New Maximum Rating</td>
-                <td id="new_power">0</td>
-                <td id="new_acc">0</td>
-                <td id="new_ca">0</td>
-                <td id="new_strike">0</td>
-                <td id="new_sev">0</td>
-            </tr>
-            <tr>
-                <td>Delta</td>
-                <td id="del_power">0</td>
-                <td id="del_acc">0</td>
-                <td id="del_ca">0</td>
-                <td id="del_strike">0</td>
-                <td id="del_sev">0</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- Percentages Table -->
-    <h3>Percentage Adjustments (%)</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Source</th>
-                <th>Power</th>
-                <th>Accuracy</th>
-                <th>CA</th>
-                <th>Strike</th>
-                <th>Severity</th>
-            </tr>
-        </thead>
-        <tbody id="pctBody">
-            <!-- Injected via JavaScript -->
-        </tbody>
-        <tfoot>
-            <tr class="highlight-row">
-                <td>Total %</td>
-                <td id="totPct_Power">0.000</td>
-                <td id="totPct_Acc">0.000</td>
-                <td id="totPct_CA">0.000</td>
-                <td id="totPct_Strike">0.000</td>
-                <td id="totPct_Sev">0.000</td>
-            </tr>
-        </tfoot>
-    </table>
-
-</div>
-
-<script>
-    // 1. Generate Percentage Inputs
-    const pctSources = ['Base %', 'Head', 'Armor', 'Arms', 'Weapons', 'Feet', 'Set', 'Ring 1', 'Ring 2', 'Shirt', 'Pants'];
-    const stats = ['Power', 'Acc', 'CA', 'Strike', 'Sev'];
-    
-    // Seed spreadsheet defaults to match user file
-    const defaultPct = {
-        'pct_0_Power': 0.959, 'pct_0_Acc': 0.573, 'pct_0_CA': 0.902, 'pct_0_Strike': 0.825, 'pct_0_Sev': 1.035,
-        'pct_2_Acc': 0.06, 'pct_2_CA': 0.06,
-        'pct_6_Acc': 0.075,
-        'pct_7_Acc': 0.105
-    };
-
-    let html = '';
-    pctSources.forEach((src, i) => {
-        html += `<tr><td>${src}</td>`;
-        stats.forEach(stat => {
-            let id = `pct_${i}_${stat}`;
-            let val = defaultPct[id] || 0;
-            html += `<td><input type="number" step="0.001" id="${id}" value="${val}" oninput="calculateStats()"></td>`;
-        });
-        html += `</tr>`;
-    });
-    document.getElementById('pctBody').innerHTML = html;
-
-    // 2. Main Logic Engine
-    function calculateStats() {
-        let ilvl = parseFloat(document.getElementById('ilvl').value) || 0;
-        
-        // --- Calculate Maximum Ratings ---
-        let maxRatings = {
-            power: ilvl + 10000,
-            acc: ilvl,
-            ca: ilvl + 10000,
-            strike: ilvl,
-            sev: ilvl + 10000
+    <script>
+        // --- 1. DATABASES & CONSTANTS ---
+        const RACES = {
+            "Human": { power: 0.01, accuracy: 0.01, ca: 0.01, strike: 0.01, severity: 0.01 },
+            "Dragonborn": { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
+            "Metallic Dragonborn": { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
+            "Half-Orc": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0.05 },
+            "Aasimar": { power: 0.02, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            "None": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 }
         };
-        
-        document.getElementById('max_power').innerText = maxRatings.power.toLocaleString();
-        document.getElementById('max_acc').innerText = maxRatings.acc.toLocaleString();
-        document.getElementById('max_ca').innerText = maxRatings.ca.toLocaleString();
-        document.getElementById('max_strike').innerText = maxRatings.strike.toLocaleString();
-        document.getElementById('max_sev').innerText = maxRatings.sev.toLocaleString();
-        
-        // --- Pull Current Ratings ---
-        let curr = {
-            power: parseFloat(document.getElementById('curr_power').value) || 0,
-            acc: parseFloat(document.getElementById('curr_acc').value) || 0,
-            ca: parseFloat(document.getElementById('curr_ca').value) || 0,
-            strike: parseFloat(document.getElementById('curr_strike').value) || 0,
-            sev: parseFloat(document.getElementById('curr_sev').value) || 0
+
+        const FOODS = {
+            "Squash Soup": { power: 0, accuracy: 0, ca: 0, strike: 0.05, severity: 0.05 },
+            "Watermelon": { power: 0.05, accuracy: 0.05, ca: 0, strike: 0, severity: 0 },
+            "Legacy Watermelon": { power: 0.10, accuracy: 0.10, ca: 0, strike: 0, severity: 0 },
+            "Grand Summer": { power: 0.025, accuracy: 0.015, ca: 0, strike: 0.015, severity: 0.025 },
+            "Legacy Grand Summer": { power: 0.05, accuracy: 0.05, ca: 0, strike: 0.015, severity: 0.025 },
+            "Cha Lua": { power: 0, accuracy: 0.10, ca: 0, strike: 0, severity: 0.03 },
+            "Hot Wings": { power: 0, accuracy: 0.05, ca: 0, strike: 0, severity: 0.05 },
+            "None": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 }
         };
-        
-        // --- Process Buff Logic ---
-        let buff = { power: 0, acc: 0, ca: 0, strike: 0, sev: 0 };
-        
-        if (document.getElementById('flask').value === 'SIM') { buff.power += 550; buff.acc += 550; buff.strike += 550; }
-        
-        let food = document.getElementById('food').value;
-        if (food === 'Power') buff.power += 4000;
-        if (food === 'Accuracy') buff.acc += 4000;
-        if (food === 'Strike') buff.strike += 4000;
-        
-        let wildstorm = document.getElementById('wildstorm').value;
-        if (wildstorm === 'Sunlord') buff.acc += 2000;
-        if (wildstorm === 'Wildstorm') buff.strike += 2000;
-        
-        let pack1 = document.getElementById('pack1').value;
-        let pack2 = document.getElementById('pack2').value;
-        let pack3 = document.getElementById('pack3').value;
-        
-        if (pack1 === 'SIM') {
-            buff.ca += 2250;
-            if (pack2 === 'SIM') {
-                buff.ca += 1125;
-                if (pack3 === 'SIM') buff.ca += 562.5;
-            }
+
+        const RAID_BUFFS = [
+            { id: "porto", label: "Força de Cima (Porto) [+3.5% Pow/CA]", defaultChecked: true, buffs: { power: 0.035, ca: 0.035 } },
+            { id: "tutor", label: "Companheiro: Tutor [+5% CA]", defaultChecked: false, buffs: { ca: 0.05 } },
+            { id: "flap", label: "Companheiro: Flap [+5% CA]", defaultChecked: false, buffs: { ca: 0.05 } },
+            { id: "raptor", label: "Companheiro: Raptor [+18% Power]", defaultChecked: false, buffs: { power: 0.18 } },
+            { id: "wildstorm", label: "Elixir Wildstorm [+5% Crit Strike]", defaultChecked: false, buffs: { strike: 0.05 } },
+            { id: "sunlord", label: "Elixir Sunlord [+5% Power]", defaultChecked: false, buffs: { power: 0.05 } }
+        ];
+
+        const STAT_DEFINITIONS = [
+            { key: 'power', name: 'Power', offset: 10000, barTheme: 'from-amber-500 to-orange-600', textTheme: 'text-amber-400', defaultRating: 144306 },
+            { key: 'accuracy', name: 'Accuracy', offset: 0, barTheme: 'from-blue-500 to-cyan-600', textTheme: 'text-cyan-400', defaultRating: 142199 },
+            { key: 'ca', name: 'Combat Advantage', offset: 10000, barTheme: 'from-purple-500 to-indigo-600', textTheme: 'text-indigo-400', defaultRating: 153045 },
+            { key: 'strike', name: 'Critical Strike', offset: 0, barTheme: 'from-emerald-500 to-teal-600', textTheme: 'text-emerald-400', defaultRating: 145504 },
+            { key: 'severity', name: 'Critical Severity', offset: 10000, barTheme: 'from-rose-500 to-red-600', textTheme: 'text-rose-400', defaultRating: 154626 }
+        ];
+
+        // --- 2. DOM INITIALIZER ---
+        function renderInterface() {
+            // Put Checkboxes in DOM
+            const cbBox = document.getElementById('buffs-checkbox-container');
+            cbBox.innerHTML = RAID_BUFFS.map(b => `
+                <label class="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-800/60 cursor-pointer transition-colors">
+                    <input type="checkbox" id="buff-${b.id}" class="buff-toggle h-4 w-4 rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-0" ${b.defaultChecked ? 'checked' : ''}>
+                    <span class="text-slate-300 select-none">${b.label}</span>
+                </label>
+            `).join('');
+
+            // Put 5 Stat Cards in DOM
+            const cardBox = document.getElementById('stat-cards-container');
+            cardBox.innerHTML = STAT_DEFINITIONS.map(s => `
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4.5 shadow-lg flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="text-[10px] font-mono font-bold tracking-widest ${s.textTheme} uppercase">${s.offset > 0 ? 'Primary (+10k)' : 'Secondary (+0)'}</span>
+                                <h3 class="text-lg font-black text-white tracking-wide">${s.name}</h3>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-black ${s.textTheme}" id="pct-${s.key}">0.00%</div>
+                                <div class="text-xs font-mono text-slate-500">Cap: <span id="cap-${s.key}">0</span></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3.5">
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Current Rating</label>
+                            <input type="number" id="rating-${s.key}" class="stat-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-100 font-mono font-bold text-sm focus:outline-none focus:border-cyan-400 transition-colors" value="${s.defaultRating}">
+                        </div>
+
+                        <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden mb-3 p-0.5 border border-slate-800/80">
+                            <div id="bar-${s.key}" class="bg-gradient-to-r ${s.barTheme} h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-mono text-slate-400 pt-2.5 border-t border-slate-800/80">
+                            <div>Rating: <span class="text-slate-200" id="breakdown-${s.key}-rating">0.0%</span></div>
+                            <div>Buffs: <span class="text-slate-200" id="breakdown-${s.key}-buffs">+0.0%</span></div>
+                        </div>
+
+                        <div id="waste-${s.key}" class="mt-2.5 text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 border border-rose-900/50 rounded-lg px-2.5 py-1 flex items-center justify-between hidden">
+                            <span>⚠️ Over Rating Cap:</span>
+                            <span id="waste-val-${s.key}">0</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Bind reactive listeners to ALL inputs
+            document.querySelectorAll('input, select').forEach(element => {
+                element.addEventListener('input', runEngine);
+                element.addEventListener('change', runEngine);
+            });
+
+            runEngine(); // Fire calculation 1 immediately
         }
-        
-        if (document.getElementById('avian').value === 'SIM') buff.power += 1600;
-        if (document.getElementById('runic').value === 'SIM') buff.power += 2250;
-        if (document.getElementById('mystic').value === 'SIM') { buff.power += 2250; buff.acc += 2250; }
-        
-        // --- New Maximum Ratings (Current + Buffs) ---
-        let newMax = {
-            power: curr.power + buff.power,
-            acc: curr.acc + buff.acc,
-            ca: curr.ca + buff.ca,
-            strike: curr.strike + buff.strike,
-            sev: curr.sev + buff.sev
-        };
-        
-        document.getElementById('new_power').innerText = newMax.power.toLocaleString();
-        document.getElementById('new_acc').innerText = newMax.acc.toLocaleString();
-        document.getElementById('new_ca').innerText = newMax.ca.toLocaleString();
-        document.getElementById('new_strike').innerText = newMax.strike.toLocaleString();
-        document.getElementById('new_sev').innerText = newMax.sev.toLocaleString();
-        
-        // --- Calculate Delta (Max - NewMax) ---
-        document.getElementById('del_power').innerText = (maxRatings.power - newMax.power).toLocaleString();
-        document.getElementById('del_acc').innerText = (maxRatings.acc - newMax.acc).toLocaleString();
-        document.getElementById('del_ca').innerText = (maxRatings.ca - newMax.ca).toLocaleString();
-        document.getElementById('del_strike').innerText = (maxRatings.strike - newMax.strike).toLocaleString();
-        document.getElementById('del_sev').innerText = (maxRatings.sev - newMax.sev).toLocaleString();
-        
-        // --- Sum Manual Percentages ---
-        let totals = {Power: 0, Acc: 0, CA: 0, Strike: 0, Sev: 0};
-        
-        for (let i = 0; i < pctSources.length; i++) {
-            stats.forEach(stat => {
-                let val = parseFloat(document.getElementById(`pct_${i}_${stat}`).value) || 0;
-                totals[stat] += val;
+
+        // --- 3. REATIVE MATH ENGINE ---
+        function runEngine() {
+            const itemLevel = parseInt(document.getElementById('input-il').value) || 0;
+            const raceKey = document.getElementById('select-race').value;
+            const foodKey = document.getElementById('select-food').value;
+            const shTarget = document.getElementById('select-sh').value;
+
+            // Tally checked Raid Buffs
+            const activeRaidBuffs = {};
+            RAID_BUFFS.forEach(buffObj => {
+                const isON = document.getElementById(`buff-${buffObj.id}`).checked;
+                if (isON) {
+                    Object.keys(buffObj.buffs).forEach(stat => {
+                        activeRaidBuffs[stat] = (activeRaidBuffs[stat] || 0) + buffObj.buffs[stat];
+                    });
+                }
+            });
+
+            // Calculate each stat independently
+            STAT_DEFINITIONS.forEach(stat => {
+                const userRating = parseInt(document.getElementById(`rating-${stat.key}`).value) || 0;
+                
+                // 1. Target Cap
+                const targetCap = itemLevel + stat.offset;
+                document.getElementById(`cap-${stat.key}`).innerText = targetCap.toLocaleString();
+
+                // 2. Stronghold Injection
+                const shBonus = (shTarget === stat.key) ? 4000 : 0;
+                const effectiveRating = userRating + shBonus;
+
+                // 3. Rating Ratio (Strict 50% clamp)
+                const rawRatio = targetCap > 0 ? (effectiveRating / targetCap) * 0.50 : 0;
+                const clampedRatio = Math.min(0.50, rawRatio);
+
+                // 4. Flat % Buff Summation
+                const rBuff = (RACES[raceKey] && RACES[raceKey][stat.key]) ? RACES[raceKey][stat.key] : 0;
+                const fBuff = (FOODS[foodKey] && FOODS[foodKey][stat.key]) ? FOODS[foodKey][stat.key] : 0;
+                const partyBuff = activeRaidBuffs[stat.key] || 0;
+                
+                const totalBuffsDecimal = rBuff + fBuff + partyBuff;
+
+                // 5. Final % Assembly (Strict 90% Hard Cap)
+                const finalDecimal = clampedRatio + totalBuffsDecimal;
+                const finalPct = Math.min(0.90, finalDecimal) * 100;
+
+                // 6. Waste Math
+                const excessRating = Math.max(0, effectiveRating - targetCap);
+
+                // Push values to screen
+                document.getElementById(`pct-${stat.key}`).innerText = finalPct.toFixed(2) + '%';
+                document.getElementById(`breakdown-${stat.key}-rating`).innerText = (clampedRatio * 100).toFixed(2) + '%';
+                document.getElementById(`breakdown-${stat.key}-buffs`).innerText = '+' + (totalBuffsDecimal * 100).toFixed(2) + '%';
+
+                // Scale bar relative to 90% hard cap
+                const visualWidth = Math.min(100, (finalPct / 90) * 100);
+                document.getElementById(`bar-${stat.key}`).style.width = visualWidth + '%';
+
+                // Trigger waste warning DOM
+                const wastePill = document.getElementById(`waste-${stat.key}`);
+                if (excessRating > 0) {
+                    wastePill.classList.remove('hidden');
+                    document.getElementById(`waste-val-${stat.key}`).innerText = '+' + excessRating.toLocaleString();
+                } else {
+                    wastePill.classList.add('hidden');
+                }
             });
         }
-        
-        stats.forEach(stat => {
-            document.getElementById(`totPct_${stat}`).innerText = totals[stat].toFixed(3);
-        });
-    }
 
-    // 3. Initialize calculations on page load
-    window.onload = calculateStats;
-</script>
-
+        window.addEventListener('DOMContentLoaded', renderInterface);
+    </script>
 </body>
 </html>
