@@ -1,265 +1,1030 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neverwinter DPS Stat Optimizer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DPS Status Calculator</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
     <style>
-        /* Forces standard MMO numeric font styling */
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; margin: 0; 
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: #0b0e14;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #e8edf5;
+            padding: 20px;
+        }
+        .card {
+            background: #161c26;
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid #2a3342;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.2s;
+        }
+        .card:hover {
+            border-color: #3b465a;
+        }
+        .stat-input {
+            background: #0f141c;
+            border: 1px solid #2a3342;
+            border-radius: 10px;
+            padding: 8px 14px;
+            color: #e8edf5;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .stat-input:focus {
+            outline: none;
+            border-color: #6c8cff;
+            box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.15);
+        }
+        .stat-input::placeholder {
+            color: #4a5568;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8896b0;
+            font-weight: 600;
+        }
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e8edf5;
+        }
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .result-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8896b0;
+        }
+        .toggle-track {
+            width: 40px;
+            height: 22px;
+            border-radius: 999px;
+            background: #2a3342;
+            cursor: pointer;
+            transition: background 0.25s;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .toggle-track.active {
+            background: #4f7cff;
+        }
+        .toggle-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: #e8edf5;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.25s;
+        }
+        .toggle-track.active .toggle-thumb {
+            transform: translateX(18px);
+        }
+        .select-custom {
+            background: #0f141c;
+            border: 1px solid #2a3342;
+            border-radius: 10px;
+            padding: 6px 12px;
+            color: #e8edf5;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            min-width: 100px;
+        }
+        .select-custom:focus {
+            outline: none;
+            border-color: #6c8cff;
+        }
+        .select-custom option {
+            background: #161c26;
+            color: #e8edf5;
+        }
+        .badge-stat {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .badge-power {
+            background: #1f2a3a;
+            color: #8ab4ff;
+        }
+        .badge-accuracy {
+            background: #1f2a3a;
+            color: #7dd3a0;
+        }
+        .badge-ca {
+            background: #1f2a3a;
+            color: #fbbf7a;
+        }
+        .badge-strike {
+            background: #1f2a3a;
+            color: #f87171;
+        }
+        .badge-severity {
+            background: #1f2a3a;
+            color: #c084fc;
+        }
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6a7a94;
+            font-weight: 700;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #1f2835;
+            padding-bottom: 8px;
+        }
+        .grid-gap {
+            gap: 12px;
+        }
+        .tooltip-hint {
+            font-size: 0.7rem;
+            color: #5a6a84;
+            margin-left: 4px;
+        }
+        .delta-positive {
+            color: #4ade80;
+        }
+        .delta-negative {
+            color: #f87171;
+        }
+        .delta-zero {
+            color: #6a7a94;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f141c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3342;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b465a;
+        }
+        @media (max-width: 640px) {
+            .card {
+                padding: 14px 16px;
+            }
+            .stat-input {
+                font-size: 0.85rem;
+                padding: 6px 10px;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans selection:bg-cyan-500 selection:text-slate-950">
+<body>
 
-    <div class="max-w-6xl mx-auto">
-        
-        <header class="mb-8 border-b border-slate-800 pb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <div class="flex items-center gap-2">
-                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-mono tracking-widest text-slate-400 uppercase">Mod 20+ Theorycraft Engine</span>
-                </div>
-                <h1 class="text-2xl md:text-3xl font-black tracking-wider text-cyan-400 uppercase">DPS Stat Optimizer</h1>
-            </div>
-            
-            <div class="bg-slate-900 border-2 border-cyan-500/30 px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-lg shadow-cyan-950/20">
-                <label for="input-il" class="text-xs font-bold uppercase tracking-wider text-slate-300">Item Level:</label>
-                <input type="number" id="input-il" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1 text-amber-400 font-mono font-bold text-xl w-36 text-center focus:outline-none focus:border-cyan-400" value="143887">
-            </div>
-        </header>
+    <div id="root"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 h-fit shadow-xl space-y-6">
-                <h2 class="text-xs font-black tracking-widest text-slate-400 uppercase border-b border-slate-800 pb-2.5">Configuração (Modifiers)</h2>
-
-                <div class="space-y-4 text-xs">
-                    <div>
-                        <label class="block text-slate-300 mb-1.5 font-bold uppercase tracking-wider">Raça (Race)</label>
-                        <select id="select-race" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 font-medium focus:outline-none focus:border-cyan-500">
-                            <option value="Half-Orc" selected>Half-Orc (+5% Crit Severity)</option>
-                            <option value="Dragonborn">Dragonborn (+3% Power / +3% Crit Strike)</option>
-                            <option value="Metallic Dragonborn">Metallic Dragonborn (+3% Power / +3% Crit Strike)</option>
-                            <option value="Human">Human (+1% All Stats)</option>
-                            <option value="Aasimar">Aasimar (+2% Power)</option>
-                            <option value="None">Nenhuma</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-300 mb-1.5 font-bold uppercase tracking-wider">Comida (Food)</label>
-                        <select id="select-food" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 font-medium focus:outline-none focus:border-cyan-500">
-                            <option value="Squash Soup" selected>Squash Soup (+5% Crit / +5% Severity)</option>
-                            <option value="Watermelon">Watermelon Sorbet (+5% Power / +5% Accuracy)</option>
-                            <option value="Legacy Watermelon">Legacy Sorbet (+10% Power / +10% Accuracy)</option>
-                            <option value="Grand Summer">Grand Summer Feast</option>
-                            <option value="Legacy Grand Summer">Legacy Grand Summer Feast</option>
-                            <option value="Cha Lua">Cha Lua (+10% Accuracy / +3% Severity)</option>
-                            <option value="Hot Wings">Hot Wings (+5% Accuracy / +5% Severity)</option>
-                            <option value="None">Nenhuma</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-amber-400 mb-1.5 font-bold uppercase tracking-wider">Stronghold Food (+4,000 Rating)</label>
-                        <select id="select-sh" class="w-full bg-slate-950 border border-amber-500/40 rounded-lg p-2.5 text-amber-300 font-bold focus:outline-none focus:border-amber-400">
-                            <option value="power" selected>Power Target</option>
-                            <option value="accuracy">Accuracy Target</option>
-                            <option value="ca">Combat Advantage Target</option>
-                            <option value="strike">Critical Strike Target</option>
-                            <option value="severity">Critical Severity Target</option>
-                            <option value="none">Nenhum</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 pt-3 border-t border-slate-800">Raid / Party Buffs</label>
-                    <div class="space-y-2.5 text-xs font-medium" id="buffs-checkbox-container">
-                        </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2">
-                <div id="stat-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4.5">
-                    </div>
-            </div>
-
-        </div>
-    </div>
-
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js">
+    </script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
+    </script>
     <script>
-        // --- 1. DATABASES & CONSTANTS ---
-        const RACES = {
-            "Human": { power: 0.01, accuracy: 0.01, ca: 0.01, strike: 0.01, severity: 0.01 },
-            "Dragonborn": { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
-            "Metallic Dragonborn": { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
-            "Half-Orc": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0.05 },
-            "Aasimar": { power: 0.02, accuracy: 0, ca: 0, strike: 0, severity: 0 },
-            "None": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 }
+        // ─── DATA ──────────────────────────────────────────────────────────────
+
+        const FOOD_DATA = {
+            'None': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Legacy Watermelon': { power: 0.1, accuracy: 0.1, ca: 0, strike: 0, severity: 0 },
+            'Legacy Grand Summer': { power: 0.05, accuracy: 0.05, ca: 0, strike: 0.015, severity: 0.025 },
+            'Watermelon': { power: 0.05, accuracy: 0.05, ca: 0, strike: 0, severity: 0 },
+            'Grand Summer': { power: 0.025, accuracy: 0.015, ca: 0, strike: 0.015, severity: 0.025 },
+            'Squash Soup': { power: 0, accuracy: 0, ca: 0, strike: 0.05, severity: 0.05 },
+            'Cha Lua': { power: 0, accuracy: 0.1, ca: 0, strike: 0, severity: 0.03 },
+            'Hot Wings': { power: 0, accuracy: 0.05, ca: 0, strike: 0, severity: 0.05 },
+            'Ramen': { power: 0, accuracy: 0, ca: 0.04, strike: 0, severity: 0.06 },
         };
 
-        const FOODS = {
-            "Squash Soup": { power: 0, accuracy: 0, ca: 0, strike: 0.05, severity: 0.05 },
-            "Watermelon": { power: 0.05, accuracy: 0.05, ca: 0, strike: 0, severity: 0 },
-            "Legacy Watermelon": { power: 0.10, accuracy: 0.10, ca: 0, strike: 0, severity: 0 },
-            "Grand Summer": { power: 0.025, accuracy: 0.015, ca: 0, strike: 0.015, severity: 0.025 },
-            "Legacy Grand Summer": { power: 0.05, accuracy: 0.05, ca: 0, strike: 0.015, severity: 0.025 },
-            "Cha Lua": { power: 0, accuracy: 0.10, ca: 0, strike: 0, severity: 0.03 },
-            "Hot Wings": { power: 0, accuracy: 0.05, ca: 0, strike: 0, severity: 0.05 },
-            "None": { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 }
+        const OVERLOAD_DATA = {
+            'None': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Devil\'s Precision': { power: 0, accuracy: 0.05, ca: 0, strike: 0.05, severity: 0 },
+            'Sword Coast': { power: 0.05, accuracy: 0, ca: 0.05, strike: 0, severity: 0 },
         };
 
-        const RAID_BUFFS = [
-            { id: "porto", label: "Força de Cima (Porto) [+3.5% Pow/CA]", defaultChecked: true, buffs: { power: 0.035, ca: 0.035 } },
-            { id: "tutor", label: "Companheiro: Tutor [+5% CA]", defaultChecked: false, buffs: { ca: 0.05 } },
-            { id: "flap", label: "Companheiro: Flap [+5% CA]", defaultChecked: false, buffs: { ca: 0.05 } },
-            { id: "raptor", label: "Companheiro: Raptor [+18% Power]", defaultChecked: false, buffs: { power: 0.18 } },
-            { id: "wildstorm", label: "Elixir Wildstorm [+5% Crit Strike]", defaultChecked: false, buffs: { strike: 0.05 } },
-            { id: "sunlord", label: "Elixir Sunlord [+5% Power]", defaultChecked: false, buffs: { power: 0.05 } }
-        ];
+        const ENCHANT_DATA = {
+            'None': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Lightning Flash': { power: 0, accuracy: 0.108, ca: 0, strike: 0.108, severity: 0 },
+            'Swift Synergy': { power: 0, accuracy: 0, ca: 0.108, strike: 0, severity: 0.108 },
+        };
 
-        const STAT_DEFINITIONS = [
-            { key: 'power', name: 'Power', offset: 10000, barTheme: 'from-amber-500 to-orange-600', textTheme: 'text-amber-400', defaultRating: 144306 },
-            { key: 'accuracy', name: 'Accuracy', offset: 0, barTheme: 'from-blue-500 to-cyan-600', textTheme: 'text-cyan-400', defaultRating: 142199 },
-            { key: 'ca', name: 'Combat Advantage', offset: 10000, barTheme: 'from-purple-500 to-indigo-600', textTheme: 'text-indigo-400', defaultRating: 153045 },
-            { key: 'strike', name: 'Critical Strike', offset: 0, barTheme: 'from-emerald-500 to-teal-600', textTheme: 'text-emerald-400', defaultRating: 145504 },
-            { key: 'severity', name: 'Critical Severity', offset: 10000, barTheme: 'from-rose-500 to-red-600', textTheme: 'text-rose-400', defaultRating: 154626 }
-        ];
+        const RACE_DATA = {
+            'Dragonborn': { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
+            'Human': { power: 0.01, accuracy: 0.01, ca: 0.01, strike: 0.01, severity: 0.01 },
+            'Metallic Dragonborn': { power: 0.03, accuracy: 0, ca: 0, strike: 0.03, severity: 0 },
+            'Half-Orc': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0.05 },
+            'Aasimar': { power: 0.02, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Gith': { power: 0, accuracy: 0, ca: 0.05, strike: 0, severity: 0 },
+            'Wood Elf': { power: 0, accuracy: 0, ca: 0, strike: 0.05, severity: 0 },
+            'Moon Elf': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Sun Elf': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Dwarf': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Halfling': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Half-Elf': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0.03 },
+            'Tiefling': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Drow': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+            'Menzoberranzan': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+        };
 
-        // --- 2. DOM INITIALIZER ---
-        function renderInterface() {
-            // Put Checkboxes in DOM
-            const cbBox = document.getElementById('buffs-checkbox-container');
-            cbBox.innerHTML = RAID_BUFFS.map(b => `
-                <label class="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-800/60 cursor-pointer transition-colors">
-                    <input type="checkbox" id="buff-${b.id}" class="buff-toggle h-4 w-4 rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-0" ${b.defaultChecked ? 'checked' : ''}>
-                    <span class="text-slate-300 select-none">${b.label}</span>
-                </label>
-            `).join('');
+        const CLASS_DATA = {
+            'Bard': { power: 0.006, accuracy: 0, ca: 0, strike: 0, severity: 0.006 },
+            'CW': { power: 0.006, accuracy: 0, ca: 0.006, strike: 0, severity: 0 },
+            'DC': { power: 0.006, accuracy: 0, ca: 0, strike: 0, severity: 0.006 },
+            'GF': { power: 0.006, accuracy: 0.006, ca: 0, strike: 0, severity: 0 },
+            'GWF': { power: 0.006, accuracy: 0, ca: 0, strike: 0, severity: 0.006 },
+            'HR': { power: 0.006, accuracy: 0.006, ca: 0, strike: 0, severity: 0 },
+            'SW': { power: 0.006, accuracy: 0, ca: 0, strike: 0.006, severity: 0 },
+            'TR': { power: 0.006, accuracy: 0, ca: 0.006, strike: 0, severity: 0 },
+            'None': { power: 0, accuracy: 0, ca: 0, strike: 0, severity: 0 },
+        };
 
-            // Put 5 Stat Cards in DOM
-            const cardBox = document.getElementById('stat-cards-container');
-            cardBox.innerHTML = STAT_DEFINITIONS.map(s => `
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4.5 shadow-lg flex flex-col justify-between relative overflow-hidden">
-                    <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <span class="text-[10px] font-mono font-bold tracking-widest ${s.textTheme} uppercase">${s.offset > 0 ? 'Primary (+10k)' : 'Secondary (+0)'}</span>
-                                <h3 class="text-lg font-black text-white tracking-wide">${s.name}</h3>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-2xl font-black ${s.textTheme}" id="pct-${s.key}">0.00%</div>
-                                <div class="text-xs font-mono text-slate-500">Cap: <span id="cap-${s.key}">0</span></div>
-                            </div>
-                        </div>
+        const CLASS_LIST = ['Bard', 'CW', 'DC', 'GF', 'GWF', 'HR', 'SW', 'TR', 'None'];
+        const RACE_LIST = Object.keys(RACE_DATA);
+        const FOOD_LIST = Object.keys(FOOD_DATA);
+        const OVERLOAD_LIST = Object.keys(OVERLOAD_DATA);
+        const ENCHANT_LIST = Object.keys(ENCHANT_DATA);
 
-                        <div class="mb-3.5">
-                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Current Rating</label>
-                            <input type="number" id="rating-${s.key}" class="stat-input w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-100 font-mono font-bold text-sm focus:outline-none focus:border-cyan-400 transition-colors" value="${s.defaultRating}">
-                        </div>
+        const HEALER_SHIRT_SLOTS = ['Pant 1', 'Pant 2', 'Pant 3'];
 
-                        <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden mb-3 p-0.5 border border-slate-800/80">
-                            <div id="bar-${s.key}" class="bg-gradient-to-r ${s.barTheme} h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                    </div>
+        // ─── CALCULATIONS ──────────────────────────────────────────────────────
 
-                    <div>
-                        <div class="flex justify-between text-xs font-mono text-slate-400 pt-2.5 border-t border-slate-800/80">
-                            <div>Rating: <span class="text-slate-200" id="breakdown-${s.key}-rating">0.0%</span></div>
-                            <div>Buffs: <span class="text-slate-200" id="breakdown-${s.key}-buffs">+0.0%</span></div>
-                        </div>
-
-                        <div id="waste-${s.key}" class="mt-2.5 text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 border border-rose-900/50 rounded-lg px-2.5 py-1 flex items-center justify-between hidden">
-                            <span>⚠️ Over Rating Cap:</span>
-                            <span id="waste-val-${s.key}">0</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Bind reactive listeners to ALL inputs
-            document.querySelectorAll('input, select').forEach(element => {
-                element.addEventListener('input', runEngine);
-                element.addEventListener('change', runEngine);
-            });
-
-            runEngine(); // Fire calculation 1 immediately
+        function calcMaxRating(itemLevel) {
+            return {
+                power: itemLevel + 10000,
+                accuracy: itemLevel,
+                ca: itemLevel + 10000,
+                strike: itemLevel,
+                severity: itemLevel + 10000,
+            };
         }
 
-        // --- 3. REATIVE MATH ENGINE ---
-        function runEngine() {
-            const itemLevel = parseInt(document.getElementById('input-il').value) || 0;
-            const raceKey = document.getElementById('select-race').value;
-            const foodKey = document.getElementById('select-food').value;
-            const shTarget = document.getElementById('select-sh').value;
+        function calcBuffs(state) {
+            const b = {
+                power: 0,
+                accuracy: 0,
+                ca: 0,
+                strike: 0,
+                severity: 0,
+            };
 
-            // Tally checked Raid Buffs
-            const activeRaidBuffs = {};
-            RAID_BUFFS.forEach(buffObj => {
-                const isON = document.getElementById(`buff-${buffObj.id}`).checked;
-                if (isON) {
-                    Object.keys(buffObj.buffs).forEach(stat => {
-                        activeRaidBuffs[stat] = (activeRaidBuffs[stat] || 0) + buffObj.buffs[stat];
+            // Flask
+            if (state.flask) {
+                b.power += 550;
+                b.accuracy += 550;
+                b.strike += 550;
+            }
+
+            // Stronghold food
+            if (state.strongholdFood.enabled) {
+                const val = 4000;
+                const type = state.strongholdFood.type;
+                if (type === 'Power') b.power += val;
+                else if (type === 'Accuracy') b.accuracy += val;
+                else if (type === 'Strike') b.strike += val;
+            }
+
+            // Sunlord / Wildstorm
+            if (state.sunlord) b.accuracy += 2000;
+            if (state.wildstorm) b.strike += 2000;
+
+            // Pack Tactics
+            if (state.packTactics1) b.ca += 2953;
+            if (state.packTactics1 && state.packTactics2) b.ca += 2250 / 2;
+            if (state.packTactics1 && state.packTactics2 && state.packTactics3) b.ca += 2250 / 4;
+
+            // Avian
+            if (state.avian) b.power += 1600;
+
+            // Runic Aura
+            if (state.runicAura) b.power += 2953;
+
+            // Mystic Aura
+            if (state.mysticAura) {
+                b.power += 2953;
+                b.accuracy += 2953;
+            }
+
+            // Equipment percentage bonuses (applied as flat additions to the totals)
+            // We'll apply these later as percentages of the base
+
+            // Food
+            const food = FOOD_DATA[state.food] || FOOD_DATA['None'];
+            b.power += food.power;
+            b.accuracy += food.accuracy;
+            b.ca += food.ca;
+            b.strike += food.strike;
+            b.severity += food.severity;
+
+            // Overload
+            const ov = OVERLOAD_DATA[state.overload] || OVERLOAD_DATA['None'];
+            b.power += ov.power;
+            b.accuracy += ov.accuracy;
+            b.ca += ov.ca;
+            b.strike += ov.strike;
+            b.severity += ov.severity;
+
+            // Enchant
+            const ench = ENCHANT_DATA[state.enchant] || ENCHANT_DATA['None'];
+            b.power += ench.power;
+            b.accuracy += ench.accuracy;
+            b.ca += ench.ca;
+            b.strike += ench.strike;
+            b.severity += ench.severity;
+
+            // Companions (flat additions or percentages)
+            if (state.raptor) b.power += 0.18;
+            if (state.porto) {
+                b.power += 0.035;
+                b.ca += 0.035;
+            }
+            if (state.tutor) b.ca += 0.05;
+            if (state.flap) b.ca += 0.05;
+            if (state.etrien) {
+                b.power += 0.02;
+                b.strike += 0.02;
+            }
+            if (state.critAuraOP) b.strike += 0.04;
+            if (state.bluefire) b.strike += 0.03;
+            if (state.captainElaina) b.severity += 0.03;
+            if (state.rangerPack) b.ca += 0.05;
+
+            // Healer Shirt (class + slot based)
+            if (state.healerShirt.enabled) {
+                const cls = state.healerShirt.class;
+                const slot = state.healerShirt.slot;
+                const classBonus = CLASS_DATA[cls] || CLASS_DATA['None'];
+                // Healer shirt adds half of class bonus for each of the 3 slots
+                // The spreadsheet logic: for each slot, it adds half of the class bonus
+                // Actually the spreadsheet has a complex VLOOKUP structure.
+                // Let's simplify: healer shirt adds class bonus * 0.5 for each slot that is enabled.
+                // But since only one slot can be active at a time (Pant 1, Pant 2, Pant 3),
+                // we just add half of the class bonus once.
+                const slotBonus = 0.5;
+                b.power += classBonus.power * slotBonus;
+                b.accuracy += classBonus.accuracy * slotBonus;
+                b.ca += classBonus.ca * slotBonus;
+                b.strike += classBonus.strike * slotBonus;
+                b.severity += classBonus.severity * slotBonus;
+            }
+
+            // Race
+            const raceBonus = RACE_DATA[state.currentRace] || RACE_DATA['Wood Elf'];
+            // Race bonuses are applied as percentages
+            b.power += raceBonus.power;
+            b.accuracy += raceBonus.accuracy;
+            b.ca += raceBonus.ca;
+            b.strike += raceBonus.strike;
+            b.severity += raceBonus.severity;
+
+            // Class
+            const clsBonus = CLASS_DATA[state.class] || CLASS_DATA['None'];
+            b.power += clsBonus.power;
+            b.accuracy += clsBonus.accuracy;
+            b.ca += clsBonus.ca;
+            b.strike += clsBonus.strike;
+            b.severity += clsBonus.severity;
+
+            // Equipment flat bonuses (Head, Armor, Arms, Weapons, Feet, Set, Ring1, Ring2, Shirt, Pants, Box)
+            // These are percentages added to the total
+            // We'll apply them in the total calculation
+
+            return b;
+        }
+
+        function calcTotal(state) {
+            const itemLevel = state.itemLevel || 145437;
+            const maxRating = calcMaxRating(itemLevel);
+            const current = {
+                power: state.currentRating.power || 0,
+                accuracy: state.currentRating.accuracy || 0,
+                ca: state.currentRating.ca || 0,
+                strike: state.currentRating.strike || 0,
+                severity: state.currentRating.severity || 0,
+            };
+
+            // Base buffs (flat additions)
+            const buffs = calcBuffs(state);
+
+            // Equipment percentage bonuses (applied to the base stats)
+            const equip = state.equipment;
+            const equipPower = (equip.head || 0) + (equip.armor || 0) + (equip.arms || 0) +
+                (equip.weapons || 0) + (equip.feet || 0) + (equip.set || 0) +
+                (equip.ring1 || 0) + (equip.ring2 || 0) + (equip.shirt || 0) +
+                (equip.pants || 0) + (equip.box || 0) + (equip.classBonus || 0) +
+                (equip.flaskBonus || 0);
+
+            // Calculate new maximum rating (sum of all buffs applied to max rating)
+            // For flat buffs: they add directly
+            // For percentage buffs: they apply to the max rating
+            const maxPower = maxRating.power + buffs.power + (maxRating.power * equipPower);
+            const maxAccuracy = maxRating.accuracy + buffs.accuracy + (maxRating.accuracy * equipPower);
+            const maxCa = maxRating.ca + buffs.ca + (maxRating.ca * equipPower);
+            const maxStrike = maxRating.strike + buffs.strike + (maxRating.strike * equipPower);
+            const maxSeverity = maxRating.severity + buffs.severity + (maxRating.severity * equipPower);
+
+            // Calculate delta
+            const deltaPower = current.power - maxPower;
+            const deltaAccuracy = current.accuracy - maxAccuracy;
+            const deltaCa = current.ca - maxCa;
+            const deltaStrike = current.strike - maxStrike;
+            const deltaSeverity = current.severity - maxSeverity;
+
+            // Calculate percentage (current / max, capped at 1)
+            const pctPower = maxPower > 0 ? Math.min(current.power / maxPower, 1) : 0;
+            const pctAccuracy = maxAccuracy > 0 ? Math.min(current.accuracy / maxAccuracy, 1) : 0;
+            const pctCa = maxCa > 0 ? Math.min(current.ca / maxCa, 1) : 0;
+            const pctStrike = maxStrike > 0 ? Math.min(current.strike / maxStrike, 1) : 0;
+            const pctSeverity = maxSeverity > 0 ? Math.min(current.severity / maxSeverity, 1) : 0;
+
+            return {
+                max: { power: maxPower, accuracy: maxAccuracy, ca: maxCa, strike: maxStrike, severity: maxSeverity },
+                current,
+                delta: { power: deltaPower, accuracy: deltaAccuracy, ca: deltaCa, strike: deltaStrike,
+                    severity: deltaSeverity },
+                pct: { power: pctPower, accuracy: pctAccuracy, ca: pctCa, strike: pctStrike, severity: pctSeverity },
+            };
+        }
+
+        // ─── REACT COMPONENTS ─────────────────────────────────────────────────
+
+        const { useState, useMemo, useCallback } = React;
+
+        function Toggle({ value, onChange, label, disabled }) {
+            return ( <
+                div className = "flex items-center gap-3 cursor-pointer"
+                onClick = {
+                    () => !disabled && onChange(!value) } >
+                <
+                div className = { `toggle-track ${value ? 'active' : ''}` } >
+                <
+                div className = "toggle-thumb" > < /div> <
+                /div> <
+                span className = "text-sm text-[#c8d0dc]" > { label } < /span> <
+                /div>
+            );
+        }
+
+        function StatInput({ label, value, onChange, placeholder, className }) {
+            return ( <
+                    div className = { className } >
+                    <
+                    div className = "stat-label" > { label } < /div> <
+                    input type = "number"
+                    className = "stat-input"
+                    value = { value || '' }
+                    onChange = {
+                        (e) => {
+                            const v = parseFloat(e.target.value);
+                            onChange(isNaN(v) ? 0 : v);
+                        } }
+                    placeholder = { placeholder || '0' }
+                    /> <
+                    /div>
+                );
+            }
+
+            function SelectCustom({ label, value, options, onChange, className }) {
+                return ( <
+                        div className = { className } >
+                        <
+                        div className = "stat-label" > { label } < /div> <
+                        select className = "select-custom w-full"
+                        value = { value }
+                        onChange = {
+                            (e) => onChange(e.target.value) } > {
+                            options.map((opt) => ( <
+                                option key = { opt }
+                                value = { opt } > { opt } < /option>
+                            ))
+                        } <
+                        /select> <
+                        /div>
+                    );
+                }
+
+                function Section({ title, children, className }) {
+                    return ( <
+                        div className = { `card ${className || ''}` } >
+                        <
+                        div className = "section-title" > { title } < /div> <
+                        div > { children } < /div> <
+                        /div>
+                    );
+                }
+
+                // ─── MAIN APP ──────────────────────────────────────────────────────
+
+                function App() {
+                    // ── State ──
+                    const [itemLevel, setItemLevel] = useState(145437);
+                    const [currentRating, setCurrentRating] = useState({
+                        power: 147671,
+                        accuracy: 142594,
+                        ca: 152957,
+                        strike: 143647,
+                        severity: 156583,
                     });
-                }
-            });
 
-            // Calculate each stat independently
-            STAT_DEFINITIONS.forEach(stat => {
-                const userRating = parseInt(document.getElementById(`rating-${stat.key}`).value) || 0;
-                
-                // 1. Target Cap
-                const targetCap = itemLevel + stat.offset;
-                document.getElementById(`cap-${stat.key}`).innerText = targetCap.toLocaleString();
+                    // Buffs
+                    const [flask, setFlask] = useState(true);
+                    const [strongholdFood, setStrongholdFood] = useState({ enabled: true, type: 'Power' });
+                    const [sunlord, setSunlord] = useState(true);
+                    const [wildstorm, setWildstorm] = useState(false);
+                    const [packTactics1, setPackTactics1] = useState(true);
+                    const [packTactics2, setPackTactics2] = useState(false);
+                    const [packTactics3, setPackTactics3] = useState(false);
+                    const [avian, setAvian] = useState(false);
+                    const [runicAura, setRunicAura] = useState(false);
+                    const [mysticAura, setMysticAura] = useState(true);
 
-                // 2. Stronghold Injection
-                const shBonus = (shTarget === stat.key) ? 4000 : 0;
-                const effectiveRating = userRating + shBonus;
+                    // Equipment
+                    const [equipment, setEquipment] = useState({
+                        head: 0,
+                        armor: 0.06,
+                        arms: 0,
+                        weapons: 0,
+                        feet: 0,
+                        set: 0.075,
+                        ring1: 0.105,
+                        ring2: 0,
+                        shirt: 0,
+                        pants: 0.08,
+                        box: 0.025,
+                        classBonus: 0.1,
+                        flaskBonus: 0.05,
+                    });
 
-                // 3. Rating Ratio (Strict 50% clamp)
-                const rawRatio = targetCap > 0 ? (effectiveRating / targetCap) * 0.50 : 0;
-                const clampedRatio = Math.min(0.50, rawRatio);
+                    // Consumables
+                    const [food, setFood] = useState('Squash Soup');
+                    const [overload, setOverload] = useState('None');
+                    const [enchant, setEnchant] = useState('Swift Synergy');
 
-                // 4. Flat % Buff Summation
-                const rBuff = (RACES[raceKey] && RACES[raceKey][stat.key]) ? RACES[raceKey][stat.key] : 0;
-                const fBuff = (FOODS[foodKey] && FOODS[foodKey][stat.key]) ? FOODS[foodKey][stat.key] : 0;
-                const partyBuff = activeRaidBuffs[stat.key] || 0;
-                
-                const totalBuffsDecimal = rBuff + fBuff + partyBuff;
+                    // Companions
+                    const [raptor, setRaptor] = useState(true);
+                    const [porto, setPorto] = useState(true);
+                    const [tutor, setTutor] = useState(true);
+                    const [flap, setFlap] = useState(true);
+                    const [etrien, setEtrien] = useState(false);
+                    const [critAuraOP, setCritAuraOP] = useState(false);
+                    const [bluefire, setBluefire] = useState(false);
+                    const [healerShirt, setHealerShirt] = useState({
+                        enabled: true,
+                        class: 'Bard',
+                        slot: 'Pant 1',
+                    });
+                    const [captainElaina, setCaptainElaina] = useState(false);
+                    const [rangerPack, setRangerPack] = useState(false);
 
-                // 5. Final % Assembly (Strict 90% Hard Cap)
-                const finalDecimal = clampedRatio + totalBuffsDecimal;
-                const finalPct = Math.min(0.90, finalDecimal) * 100;
+                    // Race & Class
+                    const [currentRace, setCurrentRace] = useState('Wood Elf');
+                    const [newRace, setNewRace] = useState('Wood Elf');
+                    const [characterClass, setCharacterClass] = useState('Bard');
 
-                // 6. Waste Math
-                const excessRating = Math.max(0, effectiveRating - targetCap);
+                    // ── Computed ──
+                    const state = useMemo(() => ({
+                        itemLevel,
+                        currentRating,
+                        flask,
+                        strongholdFood,
+                        sunlord,
+                        wildstorm,
+                        packTactics1,
+                        packTactics2,
+                        packTactics3,
+                        avian,
+                        runicAura,
+                        mysticAura,
+                        equipment,
+                        food,
+                        overload,
+                        enchant,
+                        raptor,
+                        porto,
+                        tutor,
+                        flap,
+                        etrien,
+                        critAuraOP,
+                        bluefire,
+                        healerShirt,
+                        captainElaina,
+                        rangerPack,
+                        currentRace,
+                        newRace,
+                        class: characterClass,
+                    }), [
+                        itemLevel, currentRating, flask, strongholdFood, sunlord, wildstorm,
+                        packTactics1, packTactics2, packTactics3, avian, runicAura, mysticAura,
+                        equipment, food, overload, enchant, raptor, porto, tutor, flap,
+                        etrien, critAuraOP, bluefire, healerShirt, captainElaina, rangerPack,
+                        currentRace, newRace, characterClass,
+                    ]);
 
-                // Push values to screen
-                document.getElementById(`pct-${stat.key}`).innerText = finalPct.toFixed(2) + '%';
-                document.getElementById(`breakdown-${stat.key}-rating`).innerText = (clampedRatio * 100).toFixed(2) + '%';
-                document.getElementById(`breakdown-${stat.key}-buffs`).innerText = '+' + (totalBuffsDecimal * 100).toFixed(2) + '%';
+                    const results = useMemo(() => calcTotal(state), [state]);
 
-                // Scale bar relative to 90% hard cap
-                const visualWidth = Math.min(100, (finalPct / 90) * 100);
-                document.getElementById(`bar-${stat.key}`).style.width = visualWidth + '%';
+                    const formatNumber = (n) => {
+                        if (n === undefined || n === null) return '0';
+                        return Math.round(n).toLocaleString();
+                    };
 
-                // Trigger waste warning DOM
-                const wastePill = document.getElementById(`waste-${stat.key}`);
-                if (excessRating > 0) {
-                    wastePill.classList.remove('hidden');
-                    document.getElementById(`waste-val-${stat.key}`).innerText = '+' + excessRating.toLocaleString();
-                } else {
-                    wastePill.classList.add('hidden');
-                }
-            });
-        }
+                    const formatPct = (n) => {
+                        if (n === undefined || n === null) return '0%';
+                        return (n * 100).toFixed(1) + '%';
+                    };
 
-        window.addEventListener('DOMContentLoaded', renderInterface);
+                    const deltaClass = (v) => {
+                        if (v > 0) return 'delta-positive';
+                        if (v < 0) return 'delta-negative';
+                        return 'delta-zero';
+                    };
+
+                    // ── Render ──
+                    return ( <
+                            div className = "max-w-7xl mx-auto" >
+                            { /* Header */ } <
+                            div className = "mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" >
+                            <
+                            div >
+                            <
+                            h1 className = "text-2xl font-bold tracking-tight text-white" >
+                            ⚔️ DPS Status Calculator <
+                            /h1> <
+                            p className = "text-[#8896b0] text-sm" >
+                            Optimize your character stats with real - time calculations <
+                            /p> <
+                            /div> <
+                            div className = "flex items-center gap-3 text-xs text-[#5a6a84]" >
+                            <
+                            span > 🟢 Green = under cap < /span> <
+                            span > 🔴 Red = over cap < /span> <
+                            /div> <
+                            /div>
+
+                            { /* Grid */ } <
+                            div className = "grid grid-cols-1 xl:grid-cols-3 gap-5" >
+
+                            { /* LEFT COLUMN: Base + Buffs */ } <
+                            div className = "xl:col-span-2 space-y-5" >
+
+                            { /* Base Stats */ } <
+                            Section title = "📊 Base Stats" >
+                            <
+                            div className = "grid grid-cols-2 sm:grid-cols-3 gap-3" >
+                            <
+                            StatInput label = "Item Level"
+                            value = { itemLevel }
+                            onChange = { setItemLevel }
+                            placeholder = "145437"
+                            /> <
+                            StatInput label = "Power"
+                            value = { currentRating.power }
+                            onChange = {
+                                (v) => setCurrentRating({ ...currentRating, power: v }) }
+                            /> <
+                            StatInput label = "Accuracy"
+                            value = { currentRating.accuracy }
+                            onChange = {
+                                (v) => setCurrentRating({ ...currentRating, accuracy: v }) }
+                            /> <
+                            StatInput label = "CA"
+                            value = { currentRating.ca }
+                            onChange = {
+                                (v) => setCurrentRating({ ...currentRating, ca: v }) }
+                            /> <
+                            StatInput label = "Strike"
+                            value = { currentRating.strike }
+                            onChange = {
+                                (v) => setCurrentRating({ ...currentRating, strike: v }) }
+                            /> <
+                            StatInput label = "Severity"
+                            value = { currentRating.severity }
+                            onChange = {
+                                (v) => setCurrentRating({ ...currentRating, severity: v }) }
+                            /> <
+                            /div> <
+                            /Section>
+
+                            { /* Buffs */ } <
+                            Section title = "⚡ Buffs" >
+                            <
+                            div className = "grid grid-cols-1 sm:grid-cols-2 gap-3" >
+                            <
+                            Toggle value = { flask }
+                            onChange = { setFlask }
+                            label = "Flask (+550 Power, Accuracy, Strike)"
+                            /> <
+                            div className = "flex items-center gap-3 flex-wrap" >
+                            <
+                            Toggle value = { strongholdFood.enabled }
+                            onChange = {
+                                (v) => setStrongholdFood({ ...strongholdFood, enabled: v }) }
+                            label = "Stronghold Food"
+                            /> <
+                            select className = "select-custom"
+                            value = { strongholdFood.type }
+                            onChange = {
+                                (e) => setStrongholdFood({ ...strongholdFood, type: e.target.value }) } >
+                            <
+                            option value = "Power" > Power < /option> <
+                            option value = "Accuracy" > Accuracy < /option> <
+                            option value = "Strike" > Strike < /option> <
+                            /select> <
+                            span className = "text-xs text-[#5a6a84]" > +4000 < /span> <
+                            /div> <
+                            Toggle value = { sunlord }
+                            onChange = { setSunlord }
+                            label = "Sunlord (+2000 Accuracy)"
+                            /> <
+                            Toggle value = { wildstorm }
+                            onChange = { setWildstorm }
+                            label = "Wildstorm (+2000 Strike)"
+                            /> <
+                            Toggle value = { packTactics1 }
+                            onChange = { setPackTactics1 }
+                            label = "Pack Tactics 1 (+2953 CA)"
+                            /> <
+                            Toggle value = { packTactics2 }
+                            onChange = { setPackTactics2 }
+                            label = "Pack Tactics 2 (+1125 CA)"
+                            disabled = { !packTactics1 }
+                            /> <
+                            Toggle value = { packTactics3 }
+                            onChange = { setPackTactics3 }
+                            label = "Pack Tactics 3 (+562.5 CA)"
+                            disabled = { !packTactics1 || !packTactics2 }
+                            /> <
+                            Toggle value = { avian }
+                            onChange = { setAvian }
+                            label = "Avian (+1600 Power)"
+                            /> <
+                            Toggle value = { runicAura }
+                            onChange = { setRunicAura }
+                            label = "Runic Aura (+2953 Power)"
+                            /> <
+                            Toggle value = { mysticAura }
+                            onChange = { setMysticAura }
+                            label = "Mystic Aura (+2953 Power, +2953 Accuracy)"
+                            /> <
+                            /div> <
+                            /Section>
+
+                            { /* Equipment */ } <
+                            Section title = "🛡️ Equipment (%)" >
+                            <
+                            div className = "grid grid-cols-3 sm:grid-cols-4 gap-2" > {
+                                Object.entries(equipment).map(([key, val]) => ( <
+                                    StatInput key = { key }
+                                    label = { key.replace(/([A-Z])/g, ' $1').trim() }
+                                    value = { val }
+                                    onChange = {
+                                        (v) => setEquipment({ ...equipment, [key]: v }) }
+                                    className = "col-span-1"
+                                    />
+                                ))
+                            } <
+                            /div> <
+                            /Section>
+
+                            <
+                            /div>
+
+                            { /* RIGHT COLUMN: Consumables, Companions, Race, Results */ } <
+                            div className = "xl:col-span-1 space-y-5" >
+
+                            { /* Consumables */ } <
+                            Section title = "🧪 Consumables" >
+                            <
+                            SelectCustom label = "Food"
+                            value = { food }
+                            options = { FOOD_LIST }
+                            onChange = { setFood }
+                            /> <
+                            SelectCustom label = "Overload"
+                            value = { overload }
+                            options = { OVERLOAD_LIST }
+                            onChange = { setOverload }
+                            /> <
+                            SelectCustom label = "Enchant"
+                            value = { enchant }
+                            options = { ENCHANT_LIST }
+                            onChange = { setEnchant }
+                            /> <
+                            /Section>
+
+                            { /* Companions */ } <
+                            Section title = "🐉 Companions" >
+                            <
+                            div className = "space-y-2" >
+                            <
+                            Toggle value = { raptor }
+                            onChange = { setRaptor }
+                            label = "Raptor (+18% Power)"
+                            /> <
+                            Toggle value = { porto }
+                            onChange = { setPorto }
+                            label = "Porto (+3.5% Power, +3.5% CA)"
+                            /> <
+                            Toggle value = { tutor }
+                            onChange = { setTutor }
+                            label = "Tutor (+5% CA)"
+                            /> <
+                            Toggle value = { flap }
+                            onChange = { setFlap }
+                            label = "Flap (+5% CA)"
+                            /> <
+                            Toggle value = { etrien }
+                            onChange = { setEtrien }
+                            label = "Etrien (+2% Power, +2% Strike)"
+                            /> <
+                            Toggle value = { critAuraOP }
+                            onChange = { setCritAuraOP }
+                            label = "Crit Aura OP (+4% Strike)"
+                            /> <
+                            Toggle value = { bluefire }
+                            onChange = { setBluefire }
+                            label = "Bluefire (+3% Strike)"
+                            /> <
+                            Toggle value = { captainElaina }
+                            onChange = { setCaptainElaina }
+                            label = "Captain Elaina (+3% Severity)"
+                            /> <
+                            Toggle value = { rangerPack }
+                            onChange = { setRangerPack }
+                            label = "Ranger Pack (+5% CA)"
+                            /> <
+                            div className = "pt-2 border-t border-[#1f2835] mt-2" >
+                            <
+                            div className = "flex items-center gap-3 flex-wrap" >
+                            <
+                            Toggle value = { healerShirt.enabled }
+                            onChange = {
+                                (v) => setHealerShirt({ ...healerShirt, enabled: v }) }
+                            label = "Healer Shirt"
+                            /> <
+                            select className = "select-custom"
+                            value = { healerShirt.class }
+                            onChange = {
+                                (e) => setHealerShirt({ ...healerShirt, class: e.target.value }) } > {
+                                CLASS_LIST.map(c => < option key = { c }
+                                value = { c } > { c } < /option>)
+                            } <
+                            /select> <
+                            select className = "select-custom"
+                            value = { healerShirt.slot }
+                            onChange = {
+                                (e) => setHealerShirt({ ...healerShirt, slot: e.target.value }) } > {
+                                HEALER_SHIRT_SLOTS.map(s => < option key = { s }
+                                value = { s } > { s } < /option>)
+                            } <
+                            /select> <
+                            /div> <
+                            /div> <
+                            /div> <
+                            /Section>
+
+                            { /* Race & Class */ } <
+                            Section title = "🧝 Race & Class" >
+                            <
+                            SelectCustom label = "Current Race"
+                            value = { currentRace }
+                            options = { RACE_LIST }
+                            onChange = { setCurrentRace }
+                            /> <
+                            SelectCustom label = "New Race (delta)"
+                            value = { newRace }
+                            options = { RACE_LIST }
+                            onChange = { setNewRace }
+                            /> <
+                            SelectCustom label = "Class"
+                            value = { characterClass }
+                            options = { CLASS_LIST }
+                            onChange = { setCharacterClass }
+                            /> <
+                            /Section>
+
+                            <
+                            /div>
+
+                            <
+                            /div>
+
+                            { /* RESULTS — Full width */ } <
+                            div className = "mt-5" >
+                            <
+                            Section title = "📈 Results" >
+                            <
+                            div className = "overflow-x-auto" >
+                            <
+                            table className = "w-full text-sm" >
+                            <
+                            thead >
+                            <
+                            tr className = "text-[#8896b0] text-xs uppercase tracking-wider" >
+                            <
+                            th className = "text-left py-2 pr-4" > &nbsp; < /th> <
+                            th className = "text-right px-3 py-2" > Power < /th> <
+                            th className = "text-right px-3 py-2" > Accuracy < /th> <
+                            th className = "text-right px-3 py-2" > CA < /th> <
+                            th className = "text-right px-3 py-2" > Strike < /th> <
+                            th className = "text-right px-3 py-2" > Severity < /th> <
+                            /tr> <
+                            /thead> <
+                            tbody className = "divide-y divide-[#1f2835]" > {
+                                [
+                                    ['Max Rating', results.max],
+                                    ['Current Rating', results.current],
+                                    ['Total (with buffs)', results.max],
+                                    ['Delta', results.delta, true],
+                                    ['% of cap', results.pct, false, true],
+                                ].map(([label, data, isDelta, isPct]) => {
+                                    const isDeltaRow = isDelta === true;
+                                    const isPctRow = isPct === true;
+                                    const vals = isDeltaRow ? [data.power, data.accuracy, data.ca, data
+                                            .strike, data.severity
+                                        ] :
+                                        isPctRow ? [data.power, data.accuracy, data.ca, data.strike,
+                                            data.severity
+                                        ] :
+                                        [data.power, data.accuracy, data.ca, data.strike, data
+                                        .severity];
+                                    return ( <
+                                        tr key = { label }
+                                        className = { isDeltaRow ? 'bg-[#0f141c]' : '' } >
+                                        <
+                                        td className = "py-2 pr-4 font-medium text-[#c8d0dc]" > { label } < /td> {
+                                            vals.map((v, i) => {
+                                                let display = isPctRow ? formatPct(v) :
+                                                    formatNumber(v);
+                                                let cls = '';
+                                                if (isDeltaRow) {
+                                                    cls = deltaClass(v);
+                                                } else if (isPctRow) {
+                                                    cls = v > 0.95 ? 'text-[#4ade80]' : v > 0.8 ?
+                                                        'text-[#fbbf7a]' : 'text-[#f87171]';
+                                                }
+                                                return ( <
+                                                    td key = { i }
+                                                    className = { `text-right px-3 py-2 font-mono ${cls}` } >
+                                                    { display } <
+                                                    /td>
+                                                );
+                                            })
+                                        } <
+                                        /tr>
+                                    );
+                                })
+                            } <
+                            /tbody> <
+                            /table> <
+                            /div> <
+                            div className = "mt-3 text-xs text-[#5a6a84] flex flex-wrap gap-4" >
+                            <
+                            span > 🔵 Power < /span> <
+                            span > 🟢 Accuracy < /span> <
+                            span > 🟠 CA < /span> <
+                            span > 🔴 Strike < /span> <
+                            span > 🟣 Severity < /span> <
+                            span className = "ml-auto" >
+                            { results.delta.power > 0 || results.delta.accuracy > 0 || results.delta.ca > 0 ||
+                                results.delta.strike > 0 || results.delta.severity > 0 ?
+                                '⚠️ Some stats are over the cap — adjust gear or buffs.' :
+                                '✅ All stats are within cap.' } <
+                            /span> <
+                            /div> <
+                            /Section> <
+                            /div>
+
+                            { /* Footer */ } <
+                            div className = "mt-6 text-xs text-[#4a5568] text-center border-t border-[#1f2835] pt-4" >
+                            DPS Status Calculator &bull; Data from Status_rev002.xlsx &bull; All calculations in real -
+                            time <
+                            /div> <
+                            /div>
+                        );
+                    }
+
+                    // ─── MOUNT ──────────────────────────────────────────────────────
+
+                    const root = ReactDOM.createRoot(document.getElementById('root'));
+                    root.render( < App / > );
     </script>
 </body>
 </html>
