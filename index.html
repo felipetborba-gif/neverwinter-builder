@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -323,9 +324,6 @@
                 b.accuracy += 2953;
             }
 
-            // Equipment percentage bonuses (applied as flat additions to the totals)
-            // We'll apply these later as percentages of the base
-
             // Food
             const food = FOOD_DATA[state.food] || FOOD_DATA['None'];
             b.power += food.power;
@@ -350,7 +348,7 @@
             b.strike += ench.strike;
             b.severity += ench.severity;
 
-            // Companions (flat additions or percentages)
+            // Companions
             if (state.raptor) b.power += 0.18;
             if (state.porto) {
                 b.power += 0.035;
@@ -367,17 +365,10 @@
             if (state.captainElaina) b.severity += 0.03;
             if (state.rangerPack) b.ca += 0.05;
 
-            // Healer Shirt (class + slot based)
+            // Healer Shirt
             if (state.healerShirt.enabled) {
                 const cls = state.healerShirt.class;
-                const slot = state.healerShirt.slot;
                 const classBonus = CLASS_DATA[cls] || CLASS_DATA['None'];
-                // Healer shirt adds half of class bonus for each of the 3 slots
-                // The spreadsheet logic: for each slot, it adds half of the class bonus
-                // Actually the spreadsheet has a complex VLOOKUP structure.
-                // Let's simplify: healer shirt adds class bonus * 0.5 for each slot that is enabled.
-                // But since only one slot can be active at a time (Pant 1, Pant 2, Pant 3),
-                // we just add half of the class bonus once.
                 const slotBonus = 0.5;
                 b.power += classBonus.power * slotBonus;
                 b.accuracy += classBonus.accuracy * slotBonus;
@@ -388,7 +379,6 @@
 
             // Race
             const raceBonus = RACE_DATA[state.currentRace] || RACE_DATA['Wood Elf'];
-            // Race bonuses are applied as percentages
             b.power += raceBonus.power;
             b.accuracy += raceBonus.accuracy;
             b.ca += raceBonus.ca;
@@ -402,10 +392,6 @@
             b.ca += clsBonus.ca;
             b.strike += clsBonus.strike;
             b.severity += clsBonus.severity;
-
-            // Equipment flat bonuses (Head, Armor, Arms, Weapons, Feet, Set, Ring1, Ring2, Shirt, Pants, Box)
-            // These are percentages added to the total
-            // We'll apply them in the total calculation
 
             return b;
         }
@@ -421,10 +407,8 @@
                 severity: state.currentRating.severity || 0,
             };
 
-            // Base buffs (flat additions)
             const buffs = calcBuffs(state);
 
-            // Equipment percentage bonuses (applied to the base stats)
             const equip = state.equipment;
             const equipPower = (equip.head || 0) + (equip.armor || 0) + (equip.arms || 0) +
                 (equip.weapons || 0) + (equip.feet || 0) + (equip.set || 0) +
@@ -432,23 +416,18 @@
                 (equip.pants || 0) + (equip.box || 0) + (equip.classBonus || 0) +
                 (equip.flaskBonus || 0);
 
-            // Calculate new maximum rating (sum of all buffs applied to max rating)
-            // For flat buffs: they add directly
-            // For percentage buffs: they apply to the max rating
             const maxPower = maxRating.power + buffs.power + (maxRating.power * equipPower);
             const maxAccuracy = maxRating.accuracy + buffs.accuracy + (maxRating.accuracy * equipPower);
             const maxCa = maxRating.ca + buffs.ca + (maxRating.ca * equipPower);
             const maxStrike = maxRating.strike + buffs.strike + (maxRating.strike * equipPower);
             const maxSeverity = maxRating.severity + buffs.severity + (maxRating.severity * equipPower);
 
-            // Calculate delta
             const deltaPower = current.power - maxPower;
             const deltaAccuracy = current.accuracy - maxAccuracy;
             const deltaCa = current.ca - maxCa;
             const deltaStrike = current.strike - maxStrike;
             const deltaSeverity = current.severity - maxSeverity;
 
-            // Calculate percentage (current / max, capped at 1)
             const pctPower = maxPower > 0 ? Math.min(current.power / maxPower, 1) : 0;
             const pctAccuracy = maxAccuracy > 0 ? Math.min(current.accuracy / maxAccuracy, 1) : 0;
             const pctCa = maxCa > 0 ? Math.min(current.ca / maxCa, 1) : 0;
